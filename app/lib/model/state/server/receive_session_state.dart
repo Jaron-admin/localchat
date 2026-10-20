@@ -1,4 +1,5 @@
 import 'package:dart_mappable/dart_mappable.dart';
+import 'package:localsend_app/model/chat/chat_transfer_context.dart';
 import 'package:localsend_app/model/state/server/receiving_file.dart';
 import 'package:localsend_isolates/model/device.dart';
 import 'package:localsend_isolates/model/file_type.dart';
@@ -14,6 +15,7 @@ abstract class SessionState {
 
 @MappableClass()
 class ReceiveSessionState with ReceiveSessionStateMappable implements SessionState {
+  final ChatTransferContext? chatContext;
   final String sessionId;
 
   @override
@@ -42,6 +44,7 @@ class ReceiveSessionState with ReceiveSessionStateMappable implements SessionSta
   final Set<String> createdDirectories;
 
   const ReceiveSessionState({
+    this.chatContext,
     required this.sessionId,
     required this.status,
     required this.sender,

@@ -230,6 +230,27 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  ChatAck dco_decode_box_autoadd_chat_ack(dynamic raw);
+
+  @protected
+  ChatInvite dco_decode_box_autoadd_chat_invite(dynamic raw);
+
+  @protected
+  ChatInviteStatus dco_decode_box_autoadd_chat_invite_status(dynamic raw);
+
+  @protected
+  ChatMessageDto dco_decode_box_autoadd_chat_message_dto(dynamic raw);
+
+  @protected
+  ChatOperation dco_decode_box_autoadd_chat_operation(dynamic raw);
+
+  @protected
+  ChatReply dco_decode_box_autoadd_chat_reply(dynamic raw);
+
+  @protected
+  ChatTransferRef dco_decode_box_autoadd_chat_transfer_ref(dynamic raw);
+
+  @protected
   ClientInfo dco_decode_box_autoadd_client_info(dynamic raw);
 
   @protected
@@ -296,6 +317,36 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   WsServerSdpMessage dco_decode_box_autoadd_ws_server_sdp_message(dynamic raw);
 
   @protected
+  ChatAck dco_decode_chat_ack(dynamic raw);
+
+  @protected
+  ChatCapabilities dco_decode_chat_capabilities(dynamic raw);
+
+  @protected
+  ChatErrorCode dco_decode_chat_error_code(dynamic raw);
+
+  @protected
+  ChatInvitationStatus dco_decode_chat_invitation_status(dynamic raw);
+
+  @protected
+  ChatInvite dco_decode_chat_invite(dynamic raw);
+
+  @protected
+  ChatInviteStatus dco_decode_chat_invite_status(dynamic raw);
+
+  @protected
+  ChatMessageDto dco_decode_chat_message_dto(dynamic raw);
+
+  @protected
+  ChatOperation dco_decode_chat_operation(dynamic raw);
+
+  @protected
+  ChatReply dco_decode_chat_reply(dynamic raw);
+
+  @protected
+  ChatTransferRef dco_decode_chat_transfer_ref(dynamic raw);
+
+  @protected
   ClientInfo dco_decode_client_info(dynamic raw);
 
   @protected
@@ -321,6 +372,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   int dco_decode_i_32(dynamic raw);
+
+  @protected
+  PlatformInt64 dco_decode_i_64(dynamic raw);
 
   @protected
   PlatformInt64 dco_decode_isize(dynamic raw);
@@ -364,6 +418,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   Dart2RustStreamReceiver?
   dco_decode_opt_box_autoadd_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerDart2RustStreamReceiver(dynamic raw);
+
+  @protected
+  ChatTransferRef? dco_decode_opt_box_autoadd_chat_transfer_ref(dynamic raw);
 
   @protected
   DeviceType? dco_decode_opt_box_autoadd_device_type(dynamic raw);
@@ -709,6 +766,27 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  ChatAck sse_decode_box_autoadd_chat_ack(SseDeserializer deserializer);
+
+  @protected
+  ChatInvite sse_decode_box_autoadd_chat_invite(SseDeserializer deserializer);
+
+  @protected
+  ChatInviteStatus sse_decode_box_autoadd_chat_invite_status(SseDeserializer deserializer);
+
+  @protected
+  ChatMessageDto sse_decode_box_autoadd_chat_message_dto(SseDeserializer deserializer);
+
+  @protected
+  ChatOperation sse_decode_box_autoadd_chat_operation(SseDeserializer deserializer);
+
+  @protected
+  ChatReply sse_decode_box_autoadd_chat_reply(SseDeserializer deserializer);
+
+  @protected
+  ChatTransferRef sse_decode_box_autoadd_chat_transfer_ref(SseDeserializer deserializer);
+
+  @protected
   ClientInfo sse_decode_box_autoadd_client_info(SseDeserializer deserializer);
 
   @protected
@@ -775,6 +853,36 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   WsServerSdpMessage sse_decode_box_autoadd_ws_server_sdp_message(SseDeserializer deserializer);
 
   @protected
+  ChatAck sse_decode_chat_ack(SseDeserializer deserializer);
+
+  @protected
+  ChatCapabilities sse_decode_chat_capabilities(SseDeserializer deserializer);
+
+  @protected
+  ChatErrorCode sse_decode_chat_error_code(SseDeserializer deserializer);
+
+  @protected
+  ChatInvitationStatus sse_decode_chat_invitation_status(SseDeserializer deserializer);
+
+  @protected
+  ChatInvite sse_decode_chat_invite(SseDeserializer deserializer);
+
+  @protected
+  ChatInviteStatus sse_decode_chat_invite_status(SseDeserializer deserializer);
+
+  @protected
+  ChatMessageDto sse_decode_chat_message_dto(SseDeserializer deserializer);
+
+  @protected
+  ChatOperation sse_decode_chat_operation(SseDeserializer deserializer);
+
+  @protected
+  ChatReply sse_decode_chat_reply(SseDeserializer deserializer);
+
+  @protected
+  ChatTransferRef sse_decode_chat_transfer_ref(SseDeserializer deserializer);
+
+  @protected
   ClientInfo sse_decode_client_info(SseDeserializer deserializer);
 
   @protected
@@ -800,6 +908,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   int sse_decode_i_32(SseDeserializer deserializer);
+
+  @protected
+  PlatformInt64 sse_decode_i_64(SseDeserializer deserializer);
 
   @protected
   PlatformInt64 sse_decode_isize(SseDeserializer deserializer);
@@ -845,6 +956,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   sse_decode_opt_box_autoadd_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerDart2RustStreamReceiver(
     SseDeserializer deserializer,
   );
+
+  @protected
+  ChatTransferRef? sse_decode_opt_box_autoadd_chat_transfer_ref(SseDeserializer deserializer);
 
   @protected
   DeviceType? sse_decode_opt_box_autoadd_device_type(SseDeserializer deserializer);
@@ -1235,6 +1349,27 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_box_autoadd_chat_ack(ChatAck self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_box_autoadd_chat_invite(ChatInvite self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_box_autoadd_chat_invite_status(ChatInviteStatus self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_box_autoadd_chat_message_dto(ChatMessageDto self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_box_autoadd_chat_operation(ChatOperation self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_box_autoadd_chat_reply(ChatReply self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_box_autoadd_chat_transfer_ref(ChatTransferRef self, SseSerializer serializer);
+
+  @protected
   void sse_encode_box_autoadd_client_info(ClientInfo self, SseSerializer serializer);
 
   @protected
@@ -1301,6 +1436,36 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void sse_encode_box_autoadd_ws_server_sdp_message(WsServerSdpMessage self, SseSerializer serializer);
 
   @protected
+  void sse_encode_chat_ack(ChatAck self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_chat_capabilities(ChatCapabilities self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_chat_error_code(ChatErrorCode self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_chat_invitation_status(ChatInvitationStatus self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_chat_invite(ChatInvite self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_chat_invite_status(ChatInviteStatus self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_chat_message_dto(ChatMessageDto self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_chat_operation(ChatOperation self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_chat_reply(ChatReply self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_chat_transfer_ref(ChatTransferRef self, SseSerializer serializer);
+
+  @protected
   void sse_encode_client_info(ClientInfo self, SseSerializer serializer);
 
   @protected
@@ -1326,6 +1491,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   void sse_encode_i_32(int self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_i_64(PlatformInt64 self, SseSerializer serializer);
 
   @protected
   void sse_encode_isize(PlatformInt64 self, SseSerializer serializer);
@@ -1371,6 +1539,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
     Dart2RustStreamReceiver? self,
     SseSerializer serializer,
   );
+
+  @protected
+  void sse_encode_opt_box_autoadd_chat_transfer_ref(ChatTransferRef? self, SseSerializer serializer);
 
   @protected
   void sse_encode_opt_box_autoadd_device_type(DeviceType? self, SseSerializer serializer);

@@ -15,6 +15,7 @@ class ReceiveSessionStateMapper extends ClassMapperBase<ReceiveSessionState> {
   static ReceiveSessionStateMapper ensureInitialized() {
     if (_instance == null) {
       MapperContainer.globals.use(_instance = ReceiveSessionStateMapper._());
+      ChatTransferContextMapper.ensureInitialized();
       DeviceMapper.ensureInitialized();
       ReceivingFileMapper.ensureInitialized();
     }
@@ -24,6 +25,10 @@ class ReceiveSessionStateMapper extends ClassMapperBase<ReceiveSessionState> {
   @override
   final String id = 'ReceiveSessionState';
 
+  static ChatTransferContext? _$chatContext(ReceiveSessionState v) =>
+      v.chatContext;
+  static const Field<ReceiveSessionState, ChatTransferContext> _f$chatContext =
+      Field('chatContext', _$chatContext, opt: true);
   static String _$sessionId(ReceiveSessionState v) => v.sessionId;
   static const Field<ReceiveSessionState, String> _f$sessionId = Field(
     'sessionId',
@@ -78,6 +83,7 @@ class ReceiveSessionStateMapper extends ClassMapperBase<ReceiveSessionState> {
 
   @override
   final MappableFields<ReceiveSessionState> fields = const {
+    #chatContext: _f$chatContext,
     #sessionId: _f$sessionId,
     #status: _f$status,
     #sender: _f$sender,
@@ -93,6 +99,7 @@ class ReceiveSessionStateMapper extends ClassMapperBase<ReceiveSessionState> {
 
   static ReceiveSessionState _instantiate(DecodingData data) {
     return ReceiveSessionState(
+      chatContext: data.dec(_f$chatContext),
       sessionId: data.dec(_f$sessionId),
       status: data.dec(_f$status),
       sender: data.dec(_f$sender),
@@ -177,6 +184,8 @@ abstract class ReceiveSessionStateCopyWith<
   $Out
 >
     implements ClassCopyWith<$R, $In, $Out> {
+  ChatTransferContextCopyWith<$R, ChatTransferContext, ChatTransferContext>?
+  get chatContext;
   DeviceCopyWith<$R, Device, Device> get sender;
   MapCopyWith<
     $R,
@@ -186,6 +195,7 @@ abstract class ReceiveSessionStateCopyWith<
   >
   get files;
   $R call({
+    ChatTransferContext? chatContext,
     String? sessionId,
     SessionStatus? status,
     Device? sender,
@@ -212,6 +222,10 @@ class _ReceiveSessionStateCopyWithImpl<$R, $Out>
   late final ClassMapperBase<ReceiveSessionState> $mapper =
       ReceiveSessionStateMapper.ensureInitialized();
   @override
+  ChatTransferContextCopyWith<$R, ChatTransferContext, ChatTransferContext>?
+  get chatContext =>
+      $value.chatContext?.copyWith.$chain((v) => call(chatContext: v));
+  @override
   DeviceCopyWith<$R, Device, Device> get sender =>
       $value.sender.copyWith.$chain((v) => call(sender: v));
   @override
@@ -228,6 +242,7 @@ class _ReceiveSessionStateCopyWithImpl<$R, $Out>
   );
   @override
   $R call({
+    Object? chatContext = $none,
     String? sessionId,
     SessionStatus? status,
     Device? sender,
@@ -241,6 +256,7 @@ class _ReceiveSessionStateCopyWithImpl<$R, $Out>
     Set<String>? createdDirectories,
   }) => $apply(
     FieldCopyWithData({
+      if (chatContext != $none) #chatContext: chatContext,
       if (sessionId != null) #sessionId: sessionId,
       if (status != null) #status: status,
       if (sender != null) #sender: sender,
@@ -257,6 +273,7 @@ class _ReceiveSessionStateCopyWithImpl<$R, $Out>
   );
   @override
   ReceiveSessionState $make(CopyWithData data) => ReceiveSessionState(
+    chatContext: data.get(#chatContext, or: $value.chatContext),
     sessionId: data.get(#sessionId, or: $value.sessionId),
     status: data.get(#status, or: $value.status),
     sender: data.get(#sender, or: $value.sender),

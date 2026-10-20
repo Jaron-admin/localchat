@@ -1,23 +1,44 @@
-$makepri = Get-ChildItem 'C:\Program Files (x86)\Windows Kits\10\bin\10.*\x64\makepri.exe' | Select-Object -Last 1
-& $makepri.FullName new /pr support\build\msix\content /cf support\build\msix\priconfig.xml /mn support\build\msix\content\AppxManifest.xml /of support\build\msix\content\resources.pri /o
-& 'C:\Program Files (x86)\Windows Kits\10\App Certification Kit\makeappx.exe' pack /o /d support\build\msix\content /nv /p app\windows\localsend_msix_helper.msix
+param(
+    [Parameter(Mandatory = $true)]
+    [string]$SignedHelperPath
+)
 
-cd app
+$ErrorActionPreference = 'Stop'
+$repoRoot = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '../..'))
+$helper = Get-Item -LiteralPath $SignedHelperPath
+if ((Get-AuthenticodeSignature -LiteralPath $helper.FullName).Status -ne 'Valid') {
+    throw 'Provide a signed LocalChat MSIX helper matching JaronAdmin.LocalChat and the configured publisher.'
+}
+$archive = [IO.Compression.ZipFile]::OpenRead($helper.FullName)
+try {
+    $entry = $archive.GetEntry('AppxManifest.xml')
+    if (!$entry -or $entry.Length -gt 1048576) { throw 'Missing or oversized MSIX manifest' }
+    $reader = [IO.StreamReader]::new($entry.Open())
+    try { [xml]$manifest = $reader.ReadToEnd() } finally { $reader.Dispose() }
+    [xml]$expected = Get-Content -LiteralPath (Join-Path $repoRoot 'support/build/msix/content/AppxManifest.xml') -Raw
+    if ($manifest.Package.Identity.Name -ne 'JaronAdmin.LocalChat' -or $manifest.Package.Identity.Publisher -ne $expected.Package.Identity.Publisher) {
+        throw 'The signed helper does not belong to this LocalChat package and publisher.'
+    }
+} finally {
+    $archive.Dispose()
+}
+$stageDir = Join-Path ([IO.Path]::GetTempPath()) ('localchat-inno-' + [guid]::NewGuid())
+$payloadDir = Join-Path $stageDir 'payload'
+$resultDir = Join-Path $repoRoot 'app/dist'
+New-Item -ItemType Directory -Path $payloadDir, $resultDir -Force | Out-Null
+Copy-Item -LiteralPath $helper.FullName -Destination (Join-Path $repoRoot 'app/windows/localchat_msix_helper.msix')
 
-fvm flutter clean
-fvm flutter pub get
-fvm flutter build windows
-
-Remove-Item "D:\inno" -Force  -Recurse -ErrorAction SilentlyContinue
-New-Item -ItemType Directory -Force -Path "D:\inno"
-Copy-Item -Path "build\windows\x64\runner\Release\*" -Destination "D:\inno" -Recurse
-Copy-Item -Path "assets\packaging\logo.ico" -Destination "D:\inno"
-
-cd ..
-
-Copy-Item -Path "support\build\windows\x64\*" -Destination "D:\inno" -Recurse
-Remove-Item "D:\inno-result" -Force  -Recurse -ErrorAction SilentlyContinue
-New-Item -ItemType Directory -Force -Path "D:\inno-result"
-iscc .\support\scripts\compile_windows_exe-inno.iss
-
-Write-Output 'Generated Windows exe installer!'
+Push-Location (Join-Path $repoRoot 'app')
+try {
+    fvm flutter pub get
+    if ($LASTEXITCODE -ne 0) { throw 'Dependency resolution failed' }
+    fvm flutter build windows
+    if ($LASTEXITCODE -ne 0) { throw 'Windows build failed' }
+    Copy-Item -Path 'build/windows/x64/runner/Release/*' -Destination $payloadDir -Recurse
+    Copy-Item -LiteralPath 'assets/packaging/logo.ico' -Destination (Join-Path $payloadDir 'logo.ico')
+    & iscc "/DPayloadDir=$payloadDir" "/DResultDir=$resultDir" (Join-Path $PSScriptRoot 'compile_windows_exe-inno.iss')
+    if ($LASTEXITCODE -ne 0) { throw 'Installer compilation failed' }
+} finally {
+    Pop-Location
+}
+Write-Output "LocalChat installer created in $resultDir. Staging retained at $stageDir."

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:localsend_app/util/device_type_ext.dart';
+import 'package:localsend_app/widget/chat/peer_address_header.dart';
 import 'package:localsend_app/widget/custom_progress_bar.dart';
 import 'package:localsend_app/widget/device_bage.dart';
 import 'package:localsend_app/widget/list_tile/custom_list_tile.dart';
@@ -53,6 +54,7 @@ class DeviceListTile extends StatelessWidget {
         runSpacing: 10,
         spacing: 10,
         children: [
+          if (device.ip != null) Text('${formatChatAddress(device.ip, device.port)} · ${device.deviceModel ?? device.deviceType.name}'),
           if (info != null)
             Text(info!, style: const TextStyle(color: Colors.grey))
           else if (progress != null)

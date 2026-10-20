@@ -1,6 +1,10 @@
 import 'dart:async';
 import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:localsend_app/model/chat/chat_attachment.dart';
+import 'package:localsend_app/model/chat/chat_message.dart';
+import 'package:localsend_app/model/chat/chat_transfer_context.dart';
 import 'package:localsend_app/model/cross_file.dart';
 import 'package:localsend_app/model/send_mode.dart';
 import 'package:localsend_app/model/state/send/send_session_state.dart';
@@ -9,9 +13,12 @@ import 'package:localsend_app/pages/home_page.dart';
 import 'package:localsend_app/pages/home_page_controller.dart';
 import 'package:localsend_app/pages/progress_page.dart';
 import 'package:localsend_app/pages/send_page.dart';
+import 'package:localsend_app/provider/chat/chat_capabilities_provider.dart';
+import 'package:localsend_app/provider/chat/chat_repository_provider.dart';
 import 'package:localsend_app/provider/device_info_provider.dart';
 import 'package:localsend_app/provider/file_transfer_provider.dart';
 import 'package:localsend_app/provider/http_provider.dart';
+import 'package:localsend_app/provider/security_provider.dart';
 import 'package:localsend_app/provider/selection/selected_sending_files_provider.dart';
 import 'package:localsend_app/provider/settings_provider.dart';
 import 'package:localsend_app/widget/dialogs/pin_dialog.dart';
@@ -89,6 +96,7 @@ class SendNotifier extends Notifier<Map<String, SendSessionState>> {
     required Device target,
     required List<CrossFile> files,
     required bool background,
+    ChatTransferContext? chatContext,
   }) async {
     // Pinned to the device the user picked, so the request is not sent at all
     // if someone else answers on that address.
@@ -99,10 +107,42 @@ class SendNotifier extends Notifier<Map<String, SendSessionState>> {
     // The ids are assigned upfront, so the checksums calculated below
     // can be mapped back to the corresponding file.
     final selectedFiles = files.map((file) => (id: _uuid.v4(), file: file)).toList();
+    rust_model.ChatTransferRef? chatRef;
+    if (chatContext != null) {
+      final capability = await ref.read(chatCapabilitiesProvider).probe(target);
+      if (!ref.read(settingsProvider).https || !target.https || !capability.features.contains('file-ref')) {
+        throw StateError('Peer does not support encrypted chat attachments');
+      }
+      final key = MessageKey(ref.read(securityProvider).certificateHash, chatContext.messageId);
+      final attachments = [
+        for (final (:id, :file) in selectedFiles)
+          ChatAttachment(
+            attachmentId: _uuid.v4(),
+            messageKey: key,
+            transferId: chatContext.transferId,
+            sessionId: sessionId,
+            fileId: id,
+            name: file.name,
+            size: file.size,
+            localPath: file.path,
+            state: AttachmentState.offered,
+          ),
+      ];
+      await ref
+          .read(chatRepositoryProvider)
+          .recordFileOffer(peerFingerprint: target.fingerprint, context: chatContext, files: attachments, incoming: false);
+      chatRef = rust_model.ChatTransferRef(
+        messageId: chatContext.messageId,
+        transferId: chatContext.transferId,
+        attachments: {for (final file in attachments) file.fileId: file.attachmentId},
+      );
+      background = true;
+    }
 
     state = state.updateSession(
       sessionId: sessionId,
       state: (_) => SendSessionState(
+        chatContext: chatContext,
         sessionId: sessionId,
         remoteSessionId: null,
         background: background,
@@ -233,6 +273,7 @@ class SendNotifier extends Notifier<Map<String, SendSessionState>> {
 
     final originDevice = ref.read(deviceFullInfoProvider);
     final requestDto = rust_model.PrepareUploadRequestDto(
+      localchat: chatRef,
       info: rust_model.RegisterDto(
         alias: originDevice.alias,
         version: originDevice.version,
@@ -344,6 +385,17 @@ class SendNotifier extends Notifier<Map<String, SendSessionState>> {
       } while (invalidPin);
     } finally {
       _prepareUploadCancelTokens.remove(sessionId);
+      if (chatContext != null && response == null) {
+        final status = state[sessionId]?.status;
+        await _chatResult(
+          sessionId,
+          status == SessionStatus.declined
+              ? AttachmentState.rejected
+              : status == null || status == SessionStatus.canceledBySender
+              ? AttachmentState.cancelled
+              : AttachmentState.failed,
+        );
+      }
     }
 
     if (response == null) {
@@ -366,6 +418,7 @@ class SendNotifier extends Notifier<Map<String, SendSessionState>> {
           ),
         );
       } catch (e) {
+        if (chatContext != null) await _chatResult(sessionId, AttachmentState.failed);
         state = state.updateSession(
           sessionId: sessionId,
           state: (s) => s?.copyWith(
@@ -377,6 +430,17 @@ class SendNotifier extends Notifier<Map<String, SendSessionState>> {
       }
     }
 
+    if (chatContext != null) {
+      for (final file in selectedFiles) {
+        await _chatResult(
+          sessionId,
+          fileMap.containsKey(file.id) ? AttachmentState.waiting : AttachmentState.rejected,
+          fileId: file.id,
+          remoteSessionId: response.response?.sessionId,
+        );
+      }
+    }
+    if (state[sessionId] == null) return;
     if (fileMap.isEmpty) {
       // receiver has nothing selected
       state = state.updateSession(
@@ -390,7 +454,7 @@ class SendNotifier extends Notifier<Map<String, SendSessionState>> {
         // Pop back to the existing HomePage instead of pushing a new one:
         // a second HomePage attaches a second PageView to the shared PageController,
         // and removing routes without animation orphans a hero in flight.
-        ref.redux(homePageControllerProvider).dispatch(ChangeTabAction(HomeTab.send));
+        ref.redux(homePageControllerProvider).dispatch(OpenNearbyTransferAction(NearbySection.send));
         ref.global.dispatch(NavigateAction.popUntilRoot());
       }
 
@@ -540,12 +604,29 @@ class SendNotifier extends Notifier<Map<String, SendSessionState>> {
 
   final uriContent = UriContent();
 
+  Future<void> _chatResult(String sessionId, AttachmentState result, {String? fileId, String? remoteSessionId}) => ref
+      .read(chatRepositoryProvider)
+      .applySessionAttachmentResult(sessionId: sessionId, fileId: fileId, state: result, remoteSessionId: remoteSessionId);
+
+  void _cancelChat(SendSessionState session) {
+    if (session.chatContext != null) {
+      unawaited(
+        _chatResult(session.sessionId, AttachmentState.cancelled).catchError((Object e) {
+          _logger.warning('Could not persist attachment cancellation', e);
+        }),
+      );
+    }
+  }
+
   /// Sends a single file. Currently only used to retry a failed file.
   Future<void> sendFile({
     required String sessionId,
     required SendingFile file,
     required bool isRetry,
   }) async {
+    if (isRetry && state[sessionId]?.chatContext != null) {
+      throw StateError('Choose the file again to send a new chat message');
+    }
     if (file.token == null) {
       return;
     }
@@ -641,6 +722,7 @@ class SendNotifier extends Notifier<Map<String, SendSessionState>> {
       await for (final event in taskResult.events) {
         switch (event) {
           case HttpUploadFileStartedEvent():
+            if (sessionState.chatContext != null) await _chatResult(sessionId, AttachmentState.transferring, fileId: event.fileId);
             _logger.info('Sending ${state[sessionId]?.files[event.fileId]?.file.fileName}');
             ref.notifier(fileTransferProvider).setStatus(sessionId: sessionId, fileId: event.fileId, status: FileStatus.sending);
           case HttpUploadFileProgressEvent():
@@ -653,6 +735,7 @@ class SendNotifier extends Notifier<Map<String, SendSessionState>> {
                 );
             _updateForegroundServiceProgress(sessionId);
           case HttpUploadFileFinishedEvent():
+            if (sessionState.chatContext != null) await _chatResult(sessionId, AttachmentState.complete, fileId: event.fileId);
             // set progress to 100% when successfully finished
             ref
                 .notifier(fileTransferProvider)
@@ -664,6 +747,9 @@ class SendNotifier extends Notifier<Map<String, SendSessionState>> {
             _updateForegroundServiceProgress(sessionId);
             ref.notifier(fileTransferProvider).setStatus(sessionId: sessionId, fileId: event.fileId, status: FileStatus.finished);
           case HttpUploadFileFailedEvent():
+            if (sessionState.chatContext != null && state[sessionId] != null && state[sessionId]!.status != SessionStatus.canceledByReceiver) {
+              await _chatResult(sessionId, AttachmentState.failed, fileId: event.fileId);
+            }
             _logger.warning('Error while sending file ${state[sessionId]?.files[event.fileId]?.file.fileName}: ${event.error}');
             ref.notifier(fileTransferProvider).setStatus(sessionId: sessionId, fileId: event.fileId, status: FileStatus.failed);
             state = state.updateSession(
@@ -681,6 +767,11 @@ class SendNotifier extends Notifier<Map<String, SendSessionState>> {
           .map((file) => file.fileId)
           .where((id) => const {FileStatus.queue, FileStatus.sending}.contains(transferNotifier.getStatus(sessionId: sessionId, fileId: id)))
           .toSet();
+      if (sessionState.chatContext != null && state[sessionId] != null && state[sessionId]!.status != SessionStatus.canceledByReceiver) {
+        for (final id in failedFileIds) {
+          await _chatResult(sessionId, AttachmentState.failed, fileId: id);
+        }
+      }
       transferNotifier.setStatuses(
         sessionId: sessionId,
         statuses: {for (final id in failedFileIds) id: FileStatus.failed},
@@ -713,6 +804,7 @@ class SendNotifier extends Notifier<Map<String, SendSessionState>> {
       return;
     }
     final remoteSessionId = sessionState.remoteSessionId;
+    _cancelChat(sessionState);
 
     _cancelRunningRequests(sessionState);
 
@@ -748,6 +840,7 @@ class SendNotifier extends Notifier<Map<String, SendSessionState>> {
       return;
     }
     TransferNotification.stop(sessionId);
+    _cancelChat(sessionState);
     _cancelRunningRequests(sessionState);
 
     state = state.updateSession(
@@ -784,7 +877,7 @@ class SendNotifier extends Notifier<Map<String, SendSessionState>> {
     _hashCancelTokens.remove(sessionId)?.cancel();
     _prepareUploadCancelTokens.remove(sessionId)?.cancel();
     state = state.removeSession(ref, sessionId);
-    if (sessionState.status == SessionStatus.finished && ref.read(settingsProvider).sendMode == SendMode.single) {
+    if (sessionState.chatContext == null && sessionState.status == SessionStatus.finished && ref.read(settingsProvider).sendMode == SendMode.single) {
       // clear selected files
       ref.redux(selectedSendingFilesProvider).dispatch(ClearSelectionAction());
     }
@@ -792,6 +885,8 @@ class SendNotifier extends Notifier<Map<String, SendSessionState>> {
 
   void clearAllSessions() {
     for (final sessionId in state.keys) {
+      _cancelChat(state[sessionId]!);
+      _cancelRunningRequests(state[sessionId]!);
       TransferNotification.stop(sessionId);
     }
     for (final cancelToken in _hashCancelTokens.values) {

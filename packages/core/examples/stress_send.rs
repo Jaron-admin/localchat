@@ -47,6 +47,7 @@ async fn main() -> anyhow::Result<()> {
         .collect();
 
     let payload = PrepareUploadRequestDtoV2 {
+        localchat: None,
         info: RegisterDtoV2 {
             alias: "Stress Sender".to_string(),
             version: PROTOCOL_VERSION_V2.to_string(),

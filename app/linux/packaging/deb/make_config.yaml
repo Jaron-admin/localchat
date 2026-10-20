@@ -1,8 +1,7 @@
-display_name: LocalSend
-package_name: localsend
+display_name: LocalChat
+package_name: localchat
 maintainer:
-  name: Tienisto
-  email: dev.tien.donam@gmail.com
+  name: LocalChat contributors
 co_authors:
   - name: TheGB0077
     email: gb.lima.dev@gmail.com
@@ -13,7 +12,7 @@ essential: false
 icon: assets/img/logo-512.png
 
 pre_dependencies:
-  - libc6 (>= 2.31)
+  - libc6 (>= 2.38)
 
 dependencies:
   - libappindicator3-1 | libayatana-appindicator3-1
@@ -22,7 +21,7 @@ dependencies:
   - xdg-user-dirs
 
 postinstall_scripts:
-  - echo "Installed Localsend successfully"
+  - echo "Installed LocalChat successfully"
 postuninstall_scripts:
   - echo "Sorry to see you go :("
 

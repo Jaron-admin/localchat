@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:localsend_app/config/app_identity.dart';
 import 'package:localsend_app/util/native/platform_check.dart';
 import 'package:localsend_app/util/native/tray_helper.dart';
 import 'package:logging/logging.dart';
@@ -56,14 +57,14 @@ class _ErrorAppState extends State<_ErrorApp> {
     _controller.text = 'Error: ${widget.error}\n\n${widget.stackTrace}';
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       final info = await PackageInfo.fromPlatform();
-      _controller.text = 'LocalSend ${info.version} (${info.buildNumber})\n\nError: ${widget.error}\n\n${widget.stackTrace}';
+      _controller.text = '${AppIdentity.displayName} ${info.version} (${info.buildNumber})\n\nError: ${widget.error}\n\n${widget.stackTrace}';
     });
   }
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'LocalSend: Error',
+      title: '${AppIdentity.displayName}: Error',
       debugShowCheckedModeBanner: false,
       home: Scaffold(
         body: TextFormField(

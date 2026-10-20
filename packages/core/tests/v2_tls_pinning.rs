@@ -176,6 +176,7 @@ fn file_dto(id: &str, size: u64) -> FileDto {
 
 fn prepare_upload_request(sender: &Identity, files: &[FileDto]) -> PrepareUploadRequestDtoV2 {
     PrepareUploadRequestDtoV2 {
+        localchat: None,
         info: sender_info(&sender.fingerprint),
         files: files
             .iter()

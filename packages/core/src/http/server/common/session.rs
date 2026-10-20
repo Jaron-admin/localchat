@@ -23,6 +23,7 @@ pub(crate) struct PendingSessionV2 {
 
     /// The IP address of the sender. Only this address may cancel the request.
     pub(crate) sender_ip: PeerIp,
+    pub(crate) chat_fingerprint: Option<String>,
 
     pub(crate) cancel: CancellationToken,
 }
@@ -32,6 +33,7 @@ pub(crate) struct UploadSessionV2 {
 
     /// The IP address of the sender. Uploads are only accepted from this address.
     pub(crate) sender_ip: PeerIp,
+    pub(crate) chat_fingerprint: Option<String>,
 
     /// The accepted files, mapped by file ID.
     pub(crate) files: HashMap<String, SessionFileV2>,

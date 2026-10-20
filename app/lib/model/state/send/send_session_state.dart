@@ -1,4 +1,5 @@
 import 'package:dart_mappable/dart_mappable.dart';
+import 'package:localsend_app/model/chat/chat_transfer_context.dart';
 import 'package:localsend_app/model/state/send/sending_file.dart';
 import 'package:localsend_app/model/state/server/receive_session_state.dart';
 import 'package:localsend_isolates/model/device.dart';
@@ -8,6 +9,7 @@ part 'send_session_state.mapper.dart';
 
 @MappableClass()
 class SendSessionState with SendSessionStateMappable implements SessionState {
+  final ChatTransferContext? chatContext;
   final String sessionId;
   final String? remoteSessionId; // v2
   final bool background;
@@ -33,6 +35,7 @@ class SendSessionState with SendSessionStateMappable implements SessionState {
   final String? errorMessage;
 
   const SendSessionState({
+    this.chatContext,
     required this.sessionId,
     required this.remoteSessionId,
     required this.background,

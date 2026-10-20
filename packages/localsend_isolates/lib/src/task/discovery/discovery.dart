@@ -24,6 +24,7 @@ class DiscoveryService {
 
   final Ref _ref;
   RsDiscovery? _discovery;
+  Future<RsDiscovery>? _starting;
   Completer<void> _retryCompleter = Completer();
   bool _listening = false;
 
@@ -51,19 +52,36 @@ class DiscoveryService {
     // Announcements are only answered while the server runs: the answer would
     // advertise an HTTP port that nobody listens on otherwise.
     _ref.stream(syncProvider).listen((event) {
-      if (event.prev.serverRunning != event.next.serverRunning) {
-        unawaited(_discovery?.setAnswerAnnouncements(answer: event.next.serverRunning));
+      if (event.prev.port != event.next.port ||
+          event.prev.protocol != event.next.protocol ||
+          event.prev.alias != event.next.alias ||
+          event.prev.download != event.next.download) {
+        restartListener();
+      } else if (event.prev.serverRunning != event.next.serverRunning) {
+        if (event.next.serverRunning) {
+          // Rebuild with the bound endpoint before enabling answers/announces.
+          restartListener();
+        } else {
+          unawaited(_discovery?.setAnswerAnnouncements(answer: false));
+        }
       }
     });
 
     while (true) {
+      // Do not create a Rust discovery with a requested/unbound HTTP port.
+      if (!_ref.read(syncProvider).serverRunning) {
+        _retryCompleter = Completer();
+        await _retryCompleter.future;
+        continue;
+      }
       final syncState = _ref.read(syncProvider);
 
       final RsDiscovery discovery;
       try {
-        discovery = await startDiscovery(
+        _starting = startDiscovery(
           group: syncState.multicastGroup,
-          port: syncState.port,
+          multicastPort: defaultPort,
+          httpPort: syncState.port,
           networkWhitelist: syncState.networkWhitelist,
           networkBlacklist: syncState.networkBlacklist,
           alias: syncState.alias,
@@ -77,7 +95,10 @@ class DiscoveryService {
           privateKeyPem: syncState.securityContext.privateKey,
           timeoutMs: BigInt.from(syncState.discoveryTimeout),
         );
+        discovery = await _starting!;
+        _starting = null;
       } catch (e) {
+        _starting = null;
         _logger.warning('Could not start discovery (group: ${syncState.multicastGroup}, port: ${syncState.port})', e);
         // Wait for the next restart request instead of hot-looping
         _retryCompleter = Completer();
@@ -96,8 +117,22 @@ class DiscoveryService {
 
       _discovery = discovery;
 
+      // Sync can change while the Rust listener is being created. Do not
+      // advertise its captured port/identity if that configuration is stale.
+      final current = _ref.read(syncProvider);
+      if (_restartRequested ||
+          current.port != syncState.port ||
+          current.protocol != syncState.protocol ||
+          current.alias != syncState.alias ||
+          current.download != syncState.download) {
+        _restartRequested = false;
+        _discovery = null;
+        await discovery.stop();
+        continue;
+      }
+
       // Tell everyone in the network that I am online.
-      unawaited(discovery.announce());
+      if (current.serverRunning) unawaited(discovery.announce());
 
       await for (final device in discovery.listen()) {
         if (!devices.isClosed) {
@@ -121,12 +156,28 @@ class DiscoveryService {
     }
   }
 
+  /// Waits for the previous listener and in-flight announcement bursts to stop.
+  Future<void> pause() async {
+    _restartRequested = true;
+    RsDiscovery? discovery = _discovery;
+    final starting = _starting;
+    if (discovery == null && starting != null) {
+      try {
+        discovery = await starting;
+      } catch (_) {
+        return; // A failed listener has nothing to announce.
+      }
+    }
+    await discovery?.setAnswerAnnouncements(answer: false);
+    await discovery?.stop();
+  }
+
   /// Restarts the discovery, e.g. after the port or the network settings changed.
   void restartListener() {
+    _restartRequested = true;
     final discovery = _discovery;
     if (discovery != null) {
       // Ends the listen stream, which makes [startListener] rebind.
-      _restartRequested = true;
       unawaited(discovery.stop());
     } else if (!_retryCompleter.isCompleted) {
       // Starting failed previously; let [startListener] try again.
@@ -137,7 +188,7 @@ class DiscoveryService {
   /// Sends an announcement which triggers a response on every LocalSend member of the network.
   Future<void> sendAnnouncement() async {
     final discovery = _discovery;
-    if (discovery == null) {
+    if (discovery == null || _restartRequested || !_ref.read(syncProvider).serverRunning) {
       _logger.info('Discovery is not running, skipping announcement');
       return;
     }
@@ -152,7 +203,7 @@ class DiscoveryService {
   /// once the whole scan has finished.
   Future<void> scanSubnet({required String networkInterface, required int port, required bool https}) async {
     final discovery = _discovery;
-    if (discovery == null) {
+    if (discovery == null || _restartRequested || !_ref.read(syncProvider).serverRunning) {
       _logger.info('Discovery is not running, skipping subnet scan');
       return;
     }
@@ -178,7 +229,7 @@ class DiscoveryService {
     required Duration grace,
   }) async {
     final discovery = _discovery;
-    if (discovery == null) {
+    if (discovery == null || _restartRequested || !_ref.read(syncProvider).serverRunning) {
       _logger.info('Discovery is not running, skipping staged discovery');
       return;
     }

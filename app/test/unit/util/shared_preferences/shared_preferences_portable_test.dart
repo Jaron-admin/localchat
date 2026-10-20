@@ -3,13 +3,13 @@ import 'package:path/path.dart' as path;
 import 'package:test/test.dart';
 
 void main() {
-  test('should put settings.json next to the executable', () {
+  test('should put settings.json in the isolated portable directory', () {
     expect(
       buildSettingsPath(
         executablePath: path.join('opt', 'localsend', 'localsend_app'),
         fallbackDirectory: () => fail('The fallback should not be used when the executable is known'),
       ),
-      path.join('opt', 'localsend', 'settings.json'),
+      path.join('opt', 'localsend', 'localchat-data', 'settings.json'),
     );
   });
 
@@ -20,7 +20,7 @@ void main() {
         executablePath: null,
         fallbackDirectory: () => path.join('home', 'user'),
       ),
-      path.join('home', 'user', 'settings.json'),
+      path.join('home', 'user', 'localchat-data', 'settings.json'),
     );
   });
 }

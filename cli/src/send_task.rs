@@ -107,6 +107,7 @@ async fn send_inner(
 
     let offered = files.len();
     let payload = PrepareUploadRequestDtoV2 {
+        localchat: None,
         info: identity.register_dto(),
         files: files.clone(),
     };

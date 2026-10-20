@@ -40,14 +40,14 @@ class SharedPreferencesFile extends SharedPreferencesStorePlatform {
 
   Map<String, Object> _getAll() {
     if (!_file.existsSync()) {
-      _file.createSync(recursive: true);
-    }
-
-    try {
-      return json.decode(_file.readAsStringSync()).cast<String, Object>();
-    } catch (e) {
       return {};
     }
+    final decoded = json.decode(_file.readAsStringSync());
+    if (decoded is! Map<String, dynamic>) {
+      throw const FormatException('Settings must contain a JSON object.');
+    }
+    // A damaged identity must surface as an initialization error, never a new device.
+    return decoded.cast<String, Object>();
   }
 
   @override

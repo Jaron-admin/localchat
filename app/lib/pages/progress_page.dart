@@ -39,11 +39,13 @@ class ProgressPage extends StatefulWidget {
   final bool showAppBar;
   final bool closeSessionOnClose;
   final String sessionId;
+  final bool returnToPrevious;
 
   const ProgressPage({
     required this.showAppBar,
     required this.closeSessionOnClose,
     required this.sessionId,
+    this.returnToPrevious = false,
   });
 
   @override
@@ -64,6 +66,7 @@ class _ProgressPageState extends State<ProgressPage> with Refena {
   Timer? _wakelockPlusTimer;
 
   bool _advanced = false;
+  ReceiveSessionState? _matchingReceive(ReceiveSessionState? session) => session?.sessionId == widget.sessionId ? session : null;
 
   /// On Android the foreground service keeps the process and the connection alive,
   /// so there is no reason to also keep the screen on.
@@ -114,7 +117,7 @@ class _ProgressPageState extends State<ProgressPage> with Refena {
       }
 
       setState(() {
-        final receiveSession = ref.read(serverProvider)?.session;
+        final receiveSession = _matchingReceive(ref.read(serverProvider)?.session);
         if (receiveSession != null) {
           _files = receiveSession.files.values.map((f) => f.file).toList();
         } else {
@@ -137,14 +140,16 @@ class _ProgressPageState extends State<ProgressPage> with Refena {
   }
 
   void _exit({required bool closeSession}) async {
-    final receiveSession = ref.read(serverProvider.select((s) => s?.session));
+    final receiveSession = _matchingReceive(ref.read(serverProvider)?.session);
     final sendSession = ref.read(sendProvider)[widget.sessionId];
     final SessionStatus? status = receiveSession?.status ?? sendSession?.status;
     final keepSession = !closeSession && (status == SessionStatus.sending || status == SessionStatus.finishedWithErrors);
     final result = status == null || keepSession || await _askCancelConfirmation(status);
 
     if (result && mounted) {
-      if (ref.read(serverProvider)?.webUpload == true) {
+      if (widget.returnToPrevious) {
+        Navigator.of(context).pop();
+      } else if (receiveSession != null && ref.read(serverProvider)?.webUpload == true) {
         context.global.dispatch(NavigateAction.popUntil<WebSharePage>());
       } else {
         context.global.dispatch(NavigateAction.popUntilRoot());
@@ -158,7 +163,7 @@ class _ProgressPageState extends State<ProgressPage> with Refena {
       false => true,
     };
     if (result) {
-      final receiveSession = ref.read(serverProvider)?.session;
+      final receiveSession = _matchingReceive(ref.read(serverProvider)?.session);
       final sendState = ref.read(sendProvider)[widget.sessionId];
 
       if (receiveSession != null) {
@@ -201,7 +206,7 @@ class _ProgressPageState extends State<ProgressPage> with Refena {
 
     // No select: comparing the selected session runs the dart_mappable deep equality
     // over the whole files map on every state change.
-    final receiveSession = ref.watch(serverProvider)?.session;
+    final receiveSession = _matchingReceive(ref.watch(serverProvider)?.session);
     final sendSession = ref.watch(sendProvider)[widget.sessionId];
 
     final SessionState? commonSessionState = receiveSession ?? sendSession;
@@ -213,7 +218,9 @@ class _ProgressPageState extends State<ProgressPage> with Refena {
         if (!mounted) {
           return;
         }
-        if (ref.read(serverProvider)?.webUpload == true) {
+        if (widget.returnToPrevious) {
+          Navigator.of(context).pop();
+        } else if (receiveSession != null && ref.read(serverProvider)?.webUpload == true) {
           context.global.dispatch(NavigateAction.popUntil<WebSharePage>());
         } else {
           context.global.dispatch(NavigateAction.popUntilRoot());
@@ -440,7 +447,7 @@ class _ProgressPageState extends State<ProgressPage> with Refena {
                             ],
                           ),
                         ),
-                        if (sendSession != null && fileStatus == FileStatus.failed)
+                        if (sendSession != null && sendSession.chatContext == null && fileStatus == FileStatus.failed)
                           IconButton(
                             icon: const Icon(Icons.refresh),
                             onPressed: () async {

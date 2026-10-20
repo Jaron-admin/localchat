@@ -40,7 +40,9 @@ class TranslationsZhCn extends Translations with BaseTranslations<AppLocale, Tra
 
   // Translations
   @override
-  String get appName => 'LocalSend';
+  String get appName => 'LocalChat';
+  @override
+  late final Translations$chat$zh_CN chat = Translations$chat$zh_CN.internal(_root);
   @override
   late final Translations$general$zh_CN general = Translations$general$zh_CN.internal(_root);
   @override
@@ -95,6 +97,151 @@ class TranslationsZhCn extends Translations with BaseTranslations<AppLocale, Tra
   late final Translations$web$zh_CN web = Translations$web$zh_CN.internal(_root);
   @override
   late final Translations$assetPicker$zh_CN assetPicker = Translations$assetPicker$zh_CN.internal(_root);
+}
+
+// Path: chat
+class Translations$chat$zh_CN extends Translations$chat$en {
+  Translations$chat$zh_CN.internal(TranslationsZhCn root) : this._root = root, super.internal(root);
+
+  final TranslationsZhCn _root; // ignore: unused_field
+
+  // Translations
+  @override
+  String get chooseFileAgain => '重新选取文件发送';
+  @override
+  String get fileOffered => '等待接受';
+  @override
+  String get fileWaiting => '等待传输';
+  @override
+  String get fileTransferring => '正在传输';
+  @override
+  String get fileSent => '文件已发送';
+  @override
+  String get fileSaved => '文件已保存';
+  @override
+  String get fileRejected => '文件已拒绝';
+  @override
+  String get fileCancelled => '传输已取消';
+  @override
+  String get fileFailed => '传输失败或中断';
+  @override
+  String get cancelTransfer => '取消传输';
+  @override
+  String get openFile => '打开文件';
+  @override
+  String get viewTransfer => '查看传输';
+  @override
+  String get title => '聊天';
+  @override
+  String get nearby => '附近设备';
+  @override
+  String get devices => '设备';
+  @override
+  String get sendFiles => '发送文件';
+  @override
+  String get receiveFiles => '接收文件';
+  @override
+  String get empty => '选择附近设备，开始聊天。';
+  @override
+  String get choose => '选择一个会话';
+  @override
+  String get offline => '离线 · 上次地址';
+  @override
+  String get online => '已在局域网发现';
+  @override
+  String get unknownAddress => '暂无地址';
+  @override
+  String get ownDevice => '我的设备';
+  @override
+  String get allDevices => '全部设备';
+  @override
+  String get localAddresses => '本机 · 局域网地址';
+  @override
+  String get refresh => '刷新';
+  @override
+  String get connect => '通过 IP 连接';
+  @override
+  String get noDevices => '暂未发现附近设备。请在同一局域网的另一台设备上打开 LocalChat。';
+  @override
+  String get placeholder => '输入消息 · 回车换行';
+  @override
+  String get send => '发送';
+  @override
+  String get tooLarge => '消息超过 32 KiB（UTF-8）。';
+  @override
+  String get saveFailed => '保存失败，草稿已保留。';
+  @override
+  String get loadFailed => '无法读取本地历史，请重试，不要删除数据。';
+  @override
+  String get retry => '重试';
+  @override
+  String get older => '加载更早消息';
+  @override
+  String get queued => '待发送';
+  @override
+  String get sending => '发送中';
+  @override
+  String get delivered => '已送达';
+  @override
+  String get unconfirmed => '未确认';
+  @override
+  String get failed => '失败';
+  @override
+  String get rejected => '已拒绝';
+  @override
+  String get receiptHint => '已送达表示对方设备已保存，不代表已读。';
+  @override
+  String get offlineHint => '对方可能已离线，消息会保留，重新发现设备后再发送。';
+  @override
+  String get filesOnly => '此设备仅支持文件传输。';
+  @override
+  String get unknownCapability => '暂时无法确认聊天支持，请检查连接后重试。';
+  @override
+  String get encryptionRequired => '请在设置中开启 HTTPS 加密后聊天。';
+  @override
+  String get peerEncryptionRequired => '对方设备需要开启 HTTPS 才能聊天。';
+  @override
+  String get invite => '请求聊天';
+  @override
+  String get inviteTitle => '聊天请求';
+  @override
+  String get inviteHint => '接受前，可与对方核对证书指纹。接受后允许此身份发送消息。';
+  @override
+  String get pending => '等待对方接受…';
+  @override
+  String get reviewInvite => '查看请求';
+  @override
+  String get accept => '接受';
+  @override
+  String get decline => '拒绝';
+  @override
+  String get fingerprint => '证书指纹';
+  @override
+  String get permissionNeeded => '双方接受后才可发送消息。';
+  @override
+  String get permissionDenied => '聊天许可已被拒绝或撤销。';
+  @override
+  String get blocked => '已屏蔽此设备。';
+  @override
+  String get revoke => '撤销聊天许可';
+  @override
+  String get block => '屏蔽此设备';
+  @override
+  String get details => '设备与权限';
+  @override
+  String get actionFailed => '操作未完成，请重试。';
+  @override
+  String get incomingFiles => '收到文件请求';
+  @override
+  String get transferActive => '文件传输';
+  @override
+  String get newChat => '新聊天';
+  @override
+  String get requestIncoming => '请求与你聊天';
+  @override
+  String get historyEmpty => '还没有消息。';
+  @override
+  String get attach => '添加文件';
 }
 
 // Path: general
@@ -290,7 +437,7 @@ class Translations$networkInterfacesPage$zh_CN extends Translations$networkInter
   @override
   String get title => '网络接口';
   @override
-  String get info => '默认情况下，LocalSend 使用所有可用的网络接口。您可以在此处排除不需要的网络接口。您需要重新启动服务器以应用更改。';
+  String get info => '默认情况下，LocalChat 使用所有可用的网络接口。您可以在此处排除不需要的网络接口。您需要重新启动服务器以应用更改。';
   @override
   String get preview => '预览';
   @override
@@ -415,7 +562,7 @@ class Translations$receiveOptionsPage$zh_CN extends Translations$receiveOptionsP
   @override
   String get destination => _root.settingsTab.receive.destination;
   @override
-  String get appDirectory => '(LocalSend 文件夹)';
+  String get appDirectory => '(LocalChat 文件夹)';
   @override
   String get saveToGallery => _root.settingsTab.receive.saveToGallery;
   @override
@@ -494,7 +641,7 @@ class Translations$webSharePage$zh_CN extends Translations$webSharePage$en {
   @override
   String pinHint({required Object pin}) => 'PIN 为 “${pin}”';
   @override
-  String get encryptionHint => 'LocalSend 使用自签名证书。您需要在浏览器中允许它。';
+  String get encryptionHint => 'LocalChat 使用自签名证书。您需要在浏览器中允许它。';
   @override
   String pendingRequests({required Object n}) => '待处理请求：${n}';
 }
@@ -518,10 +665,10 @@ class Translations$aboutPage$zh_CN extends Translations$aboutPage$en {
 
   // Translations
   @override
-  String get title => '关于 LocalSend';
+  String get title => '关于 LocalChat';
   @override
   List<String> get description => [
-    'LocalSend 是一款免费的开源应用程序，可让您通过本地网络与附近的设备安全地分享文件和信息，而无需互联网连接。',
+    'LocalChat 是一款免费的开源应用程序，可让您通过本地网络与附近的设备安全地分享文件和信息，而无需互联网连接。',
     '本程序可在 Android、iOS、macOS、Windows 和 Linux 上使用。您可以在官方主页找到所有下载选项。',
   ];
   @override
@@ -544,7 +691,7 @@ class Translations$donationPage$zh_CN extends Translations$donationPage$en {
   @override
   String get title => '捐赠';
   @override
-  String get info => 'LocalSend 免费、开源、无广告。如果您喜欢这款应用程序，可以捐款支持开发。';
+  String get info => 'LocalChat 免费、开源、无广告。如果您喜欢这款应用程序，可以捐款支持开发。';
   @override
   String donate({required Object amount}) => '捐款 ${amount}';
   @override
@@ -745,7 +892,7 @@ class Translations$tray$zh_CN extends Translations$tray$en {
   @override
   String get open => _root.general.open;
   @override
-  String get close => '退出 LocalSend';
+  String get close => '退出 LocalChat';
   @override
   String get closeWindows => '退出';
 }
@@ -956,7 +1103,7 @@ class Translations$settingsTab$general$zh_CN extends Translations$settingsTab$ge
   @override
   String get launchMinimized => '启动时最小化到任务栏';
   @override
-  String get showInContextMenu => '在“发送到...”文件菜单中显示 LocalSend';
+  String get showInContextMenu => '在“发送到...”文件菜单中显示 LocalChat';
   @override
   String get animations => '动画效果';
 }
@@ -1058,7 +1205,7 @@ class Translations$settingsTab$other$zh_CN extends Translations$settingsTab$othe
   @override
   String get title => '其他';
   @override
-  String get support => '支持 LocalSend';
+  String get support => '支持 LocalChat';
   @override
   String get donate => '捐赠';
   @override
@@ -1406,7 +1553,7 @@ class Translations$dialogs$localNetworkUnauthorized$zh_CN extends Translations$d
   @override
   String get title => _root.dialogs.noPermission.title;
   @override
-  String get description => 'LocalSend 在没有扫描本地网络的权限的情况下无法找到其他设备。请在设置中授予此权限。';
+  String get description => 'LocalChat 在没有扫描本地网络的权限的情况下无法找到其他设备。请在设置中授予此权限。';
   @override
   String get gotoSettings => '设置';
 }
@@ -1548,7 +1695,7 @@ class Translations$dialogs$sendModeHelp$zh_CN extends Translations$dialogs$sendM
   @override
   String get multiple => '发送文件给多个接收者。已选择的文件在发送后不会取消选择。';
   @override
-  String get link => '未安装 LocalSend 的接收者可以在浏览器中打开链接以下载选中的文件。';
+  String get link => '未安装 LocalChat 的接收者可以在浏览器中打开链接以下载选中的文件。';
 }
 
 // Path: dialogs.zoom

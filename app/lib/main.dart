@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:localsend_app/config/init.dart';
@@ -6,8 +8,8 @@ import 'package:localsend_app/config/theme.dart';
 import 'package:localsend_app/gen/strings.g.dart';
 import 'package:localsend_app/model/persistence/color_mode.dart';
 import 'package:localsend_app/pages/home_page.dart';
+import 'package:localsend_app/provider/chat/chat_runtime_provider.dart';
 import 'package:localsend_app/provider/local_ip_provider.dart';
-import 'package:localsend_app/provider/network/server/server_provider.dart';
 import 'package:localsend_app/provider/settings_provider.dart';
 import 'package:localsend_app/util/native/platform_check.dart';
 import 'package:localsend_app/util/ui/dynamic_colors.dart';
@@ -15,7 +17,6 @@ import 'package:localsend_app/widget/watcher/life_cycle_watcher.dart';
 import 'package:localsend_app/widget/watcher/shortcut_watcher.dart';
 import 'package:localsend_app/widget/watcher/tray_watcher.dart';
 import 'package:localsend_app/widget/watcher/window_watcher.dart';
-import 'package:localsend_isolates/isolate.dart';
 import 'package:refena_flutter/addons.dart';
 import 'package:refena_flutter/refena_flutter.dart';
 import 'package:routerino/routerino.dart';
@@ -59,20 +60,16 @@ class LocalSendApp extends StatelessWidget {
             switch (state) {
               case AppLifecycleState.resumed:
                 ref.redux(localIpProvider).dispatch(InitLocalIpAction());
-                if (checkPlatform([TargetPlatform.iOS, TargetPlatform.android])) {
-                  // The OS may have invalidated the sockets of the suspended app without any error ever reaching the accept loop.
-                  // ignore: discarded_futures
-                  ref.notifier(serverProvider).ensureRunning();
-                }
-                if (checkPlatform([TargetPlatform.iOS])) {
-                  // The multicast sockets die the same silent way but cannot be probed, so always rebind them.
-                  ref.redux(parentIsolateProvider).dispatch(IsolateDiscoveryRestartAction());
-                }
+                unawaited(ref.read(chatRuntimeProvider).resume());
                 break;
               case AppLifecycleState.detached:
                 // The main isolate is only exited when all child isolates are exited.
                 // https://github.com/localsend/localsend/issues/1568
-                ref.redux(parentIsolateProvider).dispatch(IsolateDisposeAction());
+                unawaited(ref.read(chatRuntimeProvider).close());
+                break;
+              case AppLifecycleState.paused:
+              case AppLifecycleState.hidden:
+                if (!checkPlatformIsDesktop()) ref.read(chatRuntimeProvider).pause();
                 break;
               default:
                 break;
@@ -91,7 +88,7 @@ class LocalSendApp extends StatelessWidget {
               navigatorKey: context.read(navigationProvider).key,
               home: RouterinoHome(
                 builder: () => const HomePage(
-                  initialTab: HomeTab.receive,
+                  initialTab: HomeTab.chat,
                   appStart: true,
                 ),
               ),

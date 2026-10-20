@@ -26,6 +26,15 @@ use uuid::Uuid;
 /// Events emitted by the v2 HTTP server that must be handled by the application.
 #[derive(Debug)]
 pub enum ServerEventV2 {
+    /// Certificate-authenticated chat. Answer only after durable application work.
+    /// Dropped responders return 503; closed receivers mean timeout/disconnect.
+    ChatRequest {
+        request_id: String,
+        ip: PeerIp,
+        peer_fingerprint: String,
+        operation: crate::http::chat_dto::ChatOperation,
+        response_tx: oneshot::Sender<crate::http::chat_dto::ChatReply>,
+    },
     /// A device registered itself via `POST /api/localsend/v2/register`.
     ///
     /// On TLS, this event is only emitted when `info.fingerprint` matches the
@@ -60,6 +69,7 @@ pub enum ServerEventV2 {
         /// `info.fingerprint`, this value cannot be spoofed.
         /// `None` when the server runs without TLS.
         cert_fingerprint: Option<String>,
+        localchat: Option<crate::http::chat_dto::ChatTransferRef>,
 
         /// The offered files, mapped by file ID.
         files: HashMap<String, FileDto>,
@@ -118,6 +128,7 @@ pub enum ServerEventV2 {
 
         /// The session ID as known by the remote device.
         session_id: String,
+        cert_fingerprint: Option<String>,
     },
 
     /// The listening socket failed permanently, e.g. because the OS
@@ -248,6 +259,14 @@ pub(crate) async fn prepare_upload(
         return Err(AppError::BadRequest("No files provided".to_string()));
     }
 
+    let chat_fingerprint = if let Some(reference) = &payload.localchat {
+        let fingerprint = client_info.cert_fingerprint().ok_or(AppError::Status(StatusCode::FORBIDDEN))?;
+        if !reference.matches_files(&payload.files) {
+            return Err(AppError::BadRequest("Invalid chat attachment mapping".into()));
+        }
+        Some(fingerprint)
+    } else { None };
+
     let session_id = Uuid::new_v4().to_string();
     let cancelled = CancellationToken::new();
 
@@ -263,6 +282,7 @@ pub(crate) async fn prepare_upload(
         *slot = Some(SessionStateV2::Pending(PendingSessionV2 {
             session_id: session_id.clone(),
             sender_ip: client_info.ip,
+            chat_fingerprint: chat_fingerprint.clone(),
             cancel: cancelled.clone(),
         }));
     }
@@ -276,6 +296,7 @@ pub(crate) async fn prepare_upload(
         ip: client_info.ip,
         info: payload.info,
         cert_fingerprint: client_info.cert_fingerprint(),
+        localchat: payload.localchat,
         files: payload.files.clone(),
         decision_tx,
     };
@@ -342,6 +363,7 @@ pub(crate) async fn prepare_upload(
         *slot = Some(SessionStateV2::Active(UploadSessionV2 {
             session_id: session_id.clone(),
             sender_ip: client_info.ip,
+            chat_fingerprint,
             files,
         }));
     }
@@ -385,6 +407,9 @@ pub(crate) async fn upload(
             return Err(invalid_token_error());
         };
         if session.session_id != *session_id || session.sender_ip != client_info.ip {
+            return Err(invalid_token_error());
+        }
+        if session.chat_fingerprint.as_ref().is_some_and(|fp| Some(fp) != client_info.cert_fingerprint().as_ref()) {
             return Err(invalid_token_error());
         }
         let Some(file) = session.files.get_mut(file_id) else {
@@ -461,6 +486,21 @@ pub(crate) async fn cancel(
     let query = parse_query(req.uri().query());
     let session_id = query.get("sessionId");
 
+    // An extension session remains bound to the same TLS identity after prepare-upload.
+    // A request from a different certificate on the same IP must not cancel it or
+    // fall through as an unrelated remote-cancel event.
+    {
+        let slot = v2.session.lock().await;
+        let protected = match slot.as_ref() {
+            Some(SessionStateV2::Pending(s)) if session_id.is_none_or(|id| *id == s.session_id) => s.chat_fingerprint.as_ref(),
+            Some(SessionStateV2::Active(s)) if session_id.is_some_and(|id| *id == s.session_id) => s.chat_fingerprint.as_ref(),
+            _ => None,
+        };
+        if protected.is_some_and(|fp| Some(fp) != client_info.cert_fingerprint().as_ref()) {
+            return Err(AppError::Status(StatusCode::FORBIDDEN));
+        }
+    }
+
     // A pending prepare-upload request: the sender does not know the session
     // ID yet (it is part of the response), so a cancel from the pending
     // sender's address is accepted without one.
@@ -519,6 +559,7 @@ pub(crate) async fn cancel(
                 .send(ServerEventV2::CancelReceived {
                     ip: client_info.ip,
                     session_id: session_id.clone(),
+                    cert_fingerprint: client_info.cert_fingerprint(),
                 })
                 .await;
         }

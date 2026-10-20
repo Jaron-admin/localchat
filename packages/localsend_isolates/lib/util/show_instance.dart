@@ -26,11 +26,23 @@ Future<bool> notifyRunningInstance({
   Duration connectionTimeout = const Duration(milliseconds: 100),
   Duration responseTimeout = const Duration(milliseconds: 500),
 }) async {
-  final client = HttpClient(context: https ? _clientContext(securityContext) : null);
+  // The desktop lock prevents a second server even when encryption is off.
+  // Never forward private arguments to an unverified plaintext endpoint.
+  if (!https) return false;
+  final expectedDer = base64Decode(securityContext.certificate.replaceAll(RegExp(r'-----[^-]+-----|\s'), ''));
+  final client = HttpClient(context: _clientContext(securityContext));
   client.connectionTimeout = connectionTimeout;
+  client.findProxy = (_) => 'DIRECT';
 
   // The peer is this device itself; its certificate is self-signed by design.
-  client.badCertificateCallback = (cert, host, port) => true;
+  client.badCertificateCallback = (cert, host, port) {
+    if (host != '127.0.0.1' || cert.der.length != expectedDer.length) return false;
+    var difference = 0;
+    for (var i = 0; i < expectedDer.length; i++) {
+      difference |= cert.der[i] ^ expectedDer[i];
+    }
+    return difference == 0;
+  };
 
   try {
     // `show` is an internal endpoint that is only served on the v2 path, so the

@@ -2,8 +2,10 @@ import 'dart:io';
 
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
+import 'package:localsend_app/provider/chat/chat_runtime_provider.dart';
 import 'package:localsend_app/util/native/platform_check.dart';
 import 'package:localsend_app/util/native/tray_helper.dart';
+import 'package:refena_flutter/refena_flutter.dart';
 import 'package:tray_manager/tray_manager.dart';
 
 class TrayWatcher extends StatefulWidget {
@@ -55,6 +57,7 @@ class _TrayWatcherState extends State<TrayWatcher> with TrayListener {
         await showFromTray();
         break;
       case TrayEntry.close:
+        await context.ref.read(chatRuntimeProvider).close();
         exit(0);
       default:
     }

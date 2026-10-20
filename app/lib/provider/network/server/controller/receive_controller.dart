@@ -1,14 +1,20 @@
 import 'dart:async';
 import 'dart:convert';
+
 import 'package:collection/collection.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:localsend_app/model/chat/chat_attachment.dart';
+import 'package:localsend_app/model/chat/chat_message.dart';
+import 'package:localsend_app/model/chat/chat_peer.dart';
+import 'package:localsend_app/model/chat/chat_transfer_context.dart';
 import 'package:localsend_app/model/state/server/receive_session_state.dart';
 import 'package:localsend_app/model/state/server/receiving_file.dart';
 import 'package:localsend_app/pages/home_page.dart';
 import 'package:localsend_app/pages/home_page_controller.dart';
 import 'package:localsend_app/pages/progress_page.dart';
 import 'package:localsend_app/pages/receive_page.dart';
+import 'package:localsend_app/provider/chat/chat_repository_provider.dart';
+import 'package:localsend_app/provider/chat/transfer_notice_provider.dart';
 import 'package:localsend_app/provider/device_info_provider.dart';
 import 'package:localsend_app/provider/favorites_provider.dart';
 import 'package:localsend_app/provider/file_transfer_provider.dart';
@@ -48,6 +54,8 @@ final _logger = Logger('ReceiveController');
 /// the events handled here.
 class ReceiveController {
   final ServerUtils server;
+  bool _deferredPresentation = false;
+  String? _preparingSessionId;
 
   ReceiveController(this.server);
 
@@ -68,6 +76,7 @@ class ReceiveController {
   /// The Rust server already checked the PIN and enforces that only one
   /// session can be active at a time.
   Future<void> onPrepareUpload(HttpServerPrepareUploadEvent event) async {
+    _preparingSessionId = event.sessionId;
     if (server.getStateOrNull()?.session != null) {
       // The Rust server is the authority on the single-session invariant:
       // a new request means the old session is over (e.g. finished but still
@@ -76,6 +85,7 @@ class ReceiveController {
     }
 
     final settings = server.ref.read(settingsProvider);
+    _deferredPresentation = event.localchat != null || server.ref.read(homePageControllerProvider).currentTab == HomeTab.chat;
     final destinationDir = settings.destination ?? await getDefaultDestinationDirectory();
     final cacheDir = await getCacheDirectory();
     final sessionId = event.sessionId;
@@ -88,12 +98,50 @@ class ReceiveController {
     // when encryption is disabled.
     final senderFingerprint = event.certFingerprint ?? event.info.fingerprint;
 
+    ChatTransferContext? chatContext;
+    if (event.localchat case final extension?) {
+      try {
+        if (event.certFingerprint == null) throw StateError('Chat files require TLS');
+        final repository = server.ref.read(chatRepositoryProvider);
+        if ((await repository.getPeer(senderFingerprint))?.localPermission != ChatPermission.allowed) throw StateError('Chat permission required');
+        final conversation = await repository.ensureConversation(senderFingerprint);
+        chatContext = ChatTransferContext(conversationId: conversation.id, messageId: extension.messageId, transferId: extension.transferId);
+        await repository.recordFileOffer(
+          peerFingerprint: senderFingerprint,
+          context: chatContext,
+          incoming: true,
+          files: [
+            for (final f in files.values)
+              ChatAttachment(
+                attachmentId: extension.attachments[f.id]!,
+                messageKey: MessageKey(senderFingerprint, extension.messageId),
+                transferId: extension.transferId,
+                sessionId: sessionId,
+                fileId: f.id,
+                name: f.fileName,
+                size: f.size,
+                state: AttachmentState.offered,
+              ),
+          ],
+        );
+      } catch (e) {
+        _logger.warning('Rejected invalid or unpersisted chat file offer', e);
+        server.ref.redux(parentIsolateProvider).dispatch(IsolateHttpServerPrepareUploadDecisionAction(sessionId: sessionId, config: null));
+        return;
+      }
+    }
+    if (_preparingSessionId != sessionId) {
+      if (chatContext != null) await _chatResult(sessionId, AttachmentState.cancelled);
+      return;
+    }
+
     _logger.info('Session Id: $sessionId');
     _logger.info('Destination Directory: $destinationDir');
 
     server.setState(
       (oldState) => oldState?.copyWith(
         session: ReceiveSessionState(
+          chatContext: chatContext,
           sessionId: sessionId,
           status: SessionStatus.waiting,
           sender: event.info.toDevice(event.ip, withChannel: false).copyWith(fingerprint: senderFingerprint),
@@ -141,14 +189,18 @@ class ReceiveController {
 
     if (quickSave) {
       // Push before accepting: the permission request in [acceptFileRequest] may block for a while.
-      // ignore: use_build_context_synchronously, unawaited_futures
-      Routerino.context.pushImmediately(
-        () => ProgressPage(
-          showAppBar: false,
-          closeSessionOnClose: true,
-          sessionId: sessionId,
-        ),
-      );
+      Future<void> showProgress() async {
+        if (server.getStateOrNull()?.session?.sessionId != sessionId) return;
+        await Routerino.context.push(
+          () => ProgressPage(showAppBar: false, closeSessionOnClose: true, sessionId: sessionId, returnToPrevious: chatContext != null),
+        );
+      }
+
+      if (_deferredPresentation) {
+        server.ref.read(transferNoticeProvider).offer(sessionId, showProgress);
+      } else {
+        unawaited(showProgress());
+      }
 
       // accept all files
       await acceptFileRequest({
@@ -181,17 +233,21 @@ class ReceiveController {
           );
     }
 
+    MaterialPageRoute<void>? chatRequestRoute;
     final receiveProvider = ViewProvider((ref) {
       // No select: comparing the selected session runs the dart_mappable deep equality
       // over the whole files map on every state change.
-      final session = ref.watch(serverProvider)?.session;
+      final candidate = ref.watch(serverProvider)?.session;
+      final session = candidate?.sessionId == event.sessionId ? candidate : null;
       return ReceivePageVm(
+        returnToPrevious: chatContext != null,
         status: session?.status,
         sender: session?.sender ?? Device.empty,
         showSenderInfo: true,
         files: session?.files.values.map((f) => f.file).toList() ?? [],
         message: message,
         onAccept: () async {
+          if (ref.read(serverProvider)?.session?.sessionId != event.sessionId) return;
           if (message != null) {
             // accept nothing
             await ref.notifier(serverProvider).acceptFileRequest({});
@@ -206,23 +262,39 @@ class ReceiveController {
           final selectedFiles = ref.read(selectedReceivingFilesProvider);
 
           // Push before accepting: the permission request in [acceptFileRequest] may block for a while.
-          unawaited(
-            Routerino.context.pushAndRemoveUntilImmediately(
-              removeUntil: ReceivePage,
-              builder: () => ProgressPage(
-                showAppBar: false,
-                closeSessionOnClose: true,
-                sessionId: sessionId,
+          if (chatContext != null) {
+            await ref.notifier(serverProvider).acceptFileRequest(selectedFiles);
+            if (ref.read(serverProvider)?.session?.sessionId != event.sessionId || chatRequestRoute?.isCurrent != true) return;
+            final navigationContext = Routerino.context;
+            if (!navigationContext.mounted) return;
+            unawaited(
+              Navigator.of(navigationContext).pushReplacement(
+                MaterialPageRoute<void>(
+                  builder: (_) => ProgressPage(showAppBar: true, closeSessionOnClose: false, returnToPrevious: true, sessionId: sessionId),
+                ),
               ),
-            ),
-          );
+            );
+          } else {
+            unawaited(
+              Routerino.context.pushAndRemoveUntilImmediately(
+                removeUntil: ReceivePage,
+                builder: () => ProgressPage(
+                  showAppBar: false,
+                  closeSessionOnClose: true,
+                  sessionId: sessionId,
+                ),
+              ),
+            );
+          }
 
-          await ref.notifier(serverProvider).acceptFileRequest(selectedFiles);
+          if (chatContext == null) await ref.notifier(serverProvider).acceptFileRequest(selectedFiles);
         },
         onDecline: () {
+          if (ref.read(serverProvider)?.session?.sessionId != event.sessionId) return;
           ref.notifier(serverProvider).declineFileRequest();
         },
         onClose: () {
+          if (ref.read(serverProvider)?.session?.sessionId != event.sessionId) return;
           ref.notifier(serverProvider).closeSession();
         },
       );
@@ -230,8 +302,28 @@ class ReceiveController {
 
     server.ref.notifier(selectedReceivingFilesProvider).setFiles(files.values.toList());
 
-    // ignore: use_build_context_synchronously, unawaited_futures
-    Routerino.context.push(() => ReceivePage(receiveProvider));
+    Future<void> showRequest() async {
+      final session = server.getStateOrNull()?.session;
+      if (session?.sessionId != sessionId) return;
+      if (session!.status == SessionStatus.waiting) {
+        if (chatContext != null) {
+          chatRequestRoute = MaterialPageRoute<void>(builder: (_) => ReceivePage(receiveProvider));
+          await Navigator.of(Routerino.context).push(chatRequestRoute!);
+        } else {
+          await Routerino.context.push(() => ReceivePage(receiveProvider));
+        }
+      } else {
+        await Routerino.context.push(
+          () => ProgressPage(showAppBar: false, closeSessionOnClose: true, sessionId: sessionId, returnToPrevious: chatContext != null),
+        );
+      }
+    }
+
+    if (_deferredPresentation) {
+      server.ref.read(transferNoticeProvider).offer(sessionId, showRequest);
+    } else {
+      unawaited(showRequest());
+    }
   }
 
   /// An accepted file started being uploaded.
@@ -257,6 +349,7 @@ class ReceiveController {
     }
 
     // begin of actual file transfer
+    if (receiveState.chatContext != null) _persistResult(event.sessionId, AttachmentState.transferring, fileId: event.fileId);
     server.ref.notifier(fileTransferProvider).setStatus(sessionId: event.sessionId, fileId: fileId, status: FileStatus.sending);
     if (receiveState.startTime == null || receiveState.status != SessionStatus.sending) {
       server.setState(
@@ -320,6 +413,16 @@ class ReceiveController {
 
   /// A file has been received completely (or failed) by the server isolate.
   Future<void> onFileUploadResult(HttpServerFileUploadResultEvent event) async {
+    // Resolve persisted ownership even when the corresponding UI session has
+    // already closed. File writes may complete after cancellation.
+    await _chatResult(
+      event.sessionId,
+      event.error == null ? AttachmentState.complete : AttachmentState.failed,
+      fileId: event.fileId,
+      localPath: event.path,
+    ).catchError((Object e) {
+      _logger.warning('Could not persist received file result', e);
+    });
     final receiveState = server.getStateOrNull()?.session;
     const allowedStates = {SessionStatus.sending, SessionStatus.finishedWithErrors};
     if (receiveState == null || receiveState.sessionId != event.sessionId || !allowedStates.contains(receiveState.status)) {
@@ -389,7 +492,7 @@ class ReceiveController {
         );
 
     final session = server.getStateOrNull()?.session;
-    if (session == null) {
+    if (session == null || session.sessionId != event.sessionId) {
       return;
     }
 
@@ -422,16 +525,19 @@ class ReceiveController {
         }
       }
       if (quickSave) {
+        final deferred = _deferredPresentation;
         // close the session **after** the response has been sent
         Future.delayed(Duration.zero, () {
+          if (server.getStateOrNull()?.session?.sessionId != session.sessionId) return;
           closeSession();
           _logger.info('Closing session');
 
-          // ignore: use_build_context_synchronously, discarded_futures
-          Routerino.context.pushRootImmediately(() => const HomePage(initialTab: HomeTab.receive, appStart: false));
+          if (!deferred) {
+            server.ref.redux(homePageControllerProvider).dispatch(OpenNearbyTransferAction(NearbySection.receive));
+          }
 
           // open the dialog to open file instantly
-          if (filePath != null && filePath.isNotEmpty) {
+          if (!deferred && filePath != null && filePath.isNotEmpty) {
             // ignore: discarded_futures
             OpenFileDialog.open(
               Routerino.context, // ignore: use_build_context_synchronously
@@ -448,6 +554,7 @@ class ReceiveController {
 
   /// An upload session ended on the Rust server.
   void onSessionEnd(HttpServerSessionEndEvent event) {
+    if (event.reason == SessionEndReasonV2.cancelled) _persistResult(event.sessionId, AttachmentState.cancelled);
     final receiveSession = server.getStateOrNull()?.session;
     if (receiveSession == null || receiveSession.sessionId != event.sessionId) {
       return;
@@ -464,6 +571,8 @@ class ReceiveController {
 
   /// The sender aborted the request while the user was still deciding.
   void onPrepareUploadAborted(HttpServerPrepareUploadAbortedEvent event) {
+    if (_preparingSessionId == event.sessionId) _preparingSessionId = null;
+    _persistResult(event.sessionId, AttachmentState.cancelled);
     final receiveSession = server.getStateOrNull()?.session;
     if (receiveSession == null || receiveSession.sessionId != event.sessionId || receiveSession.status != SessionStatus.waiting) {
       return;
@@ -481,7 +590,8 @@ class ReceiveController {
       return;
     }
 
-    if (selectedSession.target.ip != event.ip) {
+    if (selectedSession.target.ip != event.ip ||
+        (selectedSession.chatContext != null && selectedSession.target.fingerprint != event.certFingerprint)) {
       return;
     }
 
@@ -517,7 +627,7 @@ class ReceiveController {
     // ignore: unawaited_futures, discarded_futures
     server.ref.redux(selectedSendingFilesProvider).dispatchAsyncTakeResult(LoadSelectionFromArgsAction(args)).then((filesAdded) {
       if (filesAdded) {
-        server.ref.redux(homePageControllerProvider).dispatch(ChangeTabAction(HomeTab.send));
+        server.ref.redux(homePageControllerProvider).dispatch(OpenNearbyTransferAction(NearbySection.send));
       }
     });
   }
@@ -529,10 +639,19 @@ class ReceiveController {
       return;
     }
 
+    if (session.chatContext != null) {
+      for (final id in session.files.keys) {
+        await _chatResult(session.sessionId, fileNameMap.containsKey(id) ? AttachmentState.waiting : AttachmentState.rejected, fileId: id);
+      }
+      if (server.getStateOrNull()?.session?.sessionId != session.sessionId || _preparingSessionId != session.sessionId) return;
+    }
+
     if (fileNameMap.isEmpty) {
       // nothing selected, the Rust server responds with 204 and creates no session
       // This usually happens for message transfers
-      server.ref.redux(parentIsolateProvider).dispatch(IsolateHttpServerPrepareUploadDecisionAction(config: _buildReceiveConfig(session, {})));
+      server.ref
+          .redux(parentIsolateProvider)
+          .dispatch(IsolateHttpServerPrepareUploadDecisionAction(sessionId: session.sessionId, config: _buildReceiveConfig(session, {})));
       closeSession();
       return;
     }
@@ -596,12 +715,14 @@ class ReceiveController {
     // From here on, the server isolate receives all accepted files on its own
     // and reports back via upload progress/result events.
     final updatedSession = server.getStateOrNull()?.session;
-    if (updatedSession == null) {
+    if (updatedSession == null || updatedSession.sessionId != session.sessionId || _preparingSessionId != session.sessionId) {
       return;
     }
     server.ref
         .redux(parentIsolateProvider)
-        .dispatch(IsolateHttpServerPrepareUploadDecisionAction(config: _buildReceiveConfig(updatedSession, fileNameMap)));
+        .dispatch(
+          IsolateHttpServerPrepareUploadDecisionAction(sessionId: session.sessionId, config: _buildReceiveConfig(updatedSession, fileNameMap)),
+        );
   }
 
   HttpServerReceiveConfig _buildReceiveConfig(ReceiveSessionState session, Map<String, String> fileNameMap) {
@@ -621,7 +742,8 @@ class ReceiveController {
       return;
     }
 
-    server.ref.redux(parentIsolateProvider).dispatch(IsolateHttpServerPrepareUploadDecisionAction(config: null));
+    if (session.chatContext != null) _persistResult(session.sessionId, AttachmentState.rejected);
+    server.ref.redux(parentIsolateProvider).dispatch(IsolateHttpServerPrepareUploadDecisionAction(sessionId: session.sessionId, config: null));
     closeSession();
   }
 
@@ -658,6 +780,7 @@ class ReceiveController {
     }
 
     // fail further uploads
+    if (session.chatContext != null) _persistResult(session.sessionId, AttachmentState.cancelled);
     server.ref.redux(parentIsolateProvider).dispatch(IsolateHttpServerCancelSessionAction(sessionId: session.sessionId));
 
     // notify sender
@@ -680,6 +803,17 @@ class ReceiveController {
     closeSession();
   }
 
+  Future<void> _chatResult(String sessionId, AttachmentState result, {String? fileId, String? localPath}) =>
+      server.ref.read(chatRepositoryProvider).applySessionAttachmentResult(sessionId: sessionId, fileId: fileId, state: result, localPath: localPath);
+
+  void _persistResult(String sessionId, AttachmentState result, {String? fileId}) {
+    unawaited(
+      _chatResult(sessionId, result, fileId: fileId).catchError((Object e) {
+        _logger.warning('Could not persist attachment state', e);
+      }),
+    );
+  }
+
   void closeSession() {
     final sessionId = server.getStateOrNull()?.session?.sessionId;
     if (sessionId == null) {
@@ -687,6 +821,7 @@ class ReceiveController {
     }
 
     TransferNotification.stop(sessionId);
+    server.ref.read(transferNoticeProvider).clear(sessionId);
 
     server.setState(
       (oldState) => oldState?.copyWith(
@@ -705,7 +840,8 @@ void _cancelBySender(ServerUtils server) {
 
   TransferNotification.stop(receiveSession.sessionId);
 
-  if (receiveSession.status == SessionStatus.waiting) {
+  final notice = server.ref.read(transferNoticeProvider);
+  if (receiveSession.status == SessionStatus.waiting && (notice.sessionId != receiveSession.sessionId || notice.routeOpen)) {
     // received cancel during accept/decline
     // pop just in case if user is in [ReceiveOptionsPage]
     Routerino.context.popUntil(ReceivePage);

@@ -1,8 +1,8 @@
 import Foundation
 import Defaults
 
-let teamIdentifierPrefix = Bundle.main.infoDictionary!["AppIdentifierPrefix"] as! String
-let sharedDefaults = UserDefaults(suiteName: "\(teamIdentifierPrefix)localsend.shared_group")!
+// Both app and extension use the same independently registered App Group.
+let sharedDefaults = UserDefaults(suiteName: "group.io.github.jaronadmin.localchat")!
 
 typealias FileBookmarkData = Data
 extension Defaults.Keys {

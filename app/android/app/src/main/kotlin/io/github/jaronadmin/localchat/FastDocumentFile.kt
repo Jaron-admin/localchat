@@ -1,4 +1,4 @@
-package org.localsend.localsend_app
+package io.github.jaronadmin.localchat
 
 import android.content.ContentResolver
 import android.content.Context

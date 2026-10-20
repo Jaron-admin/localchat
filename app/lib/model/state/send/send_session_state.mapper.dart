@@ -15,6 +15,7 @@ class SendSessionStateMapper extends ClassMapperBase<SendSessionState> {
   static SendSessionStateMapper ensureInitialized() {
     if (_instance == null) {
       MapperContainer.globals.use(_instance = SendSessionStateMapper._());
+      ChatTransferContextMapper.ensureInitialized();
       DeviceMapper.ensureInitialized();
       SendingFileMapper.ensureInitialized();
     }
@@ -24,6 +25,10 @@ class SendSessionStateMapper extends ClassMapperBase<SendSessionState> {
   @override
   final String id = 'SendSessionState';
 
+  static ChatTransferContext? _$chatContext(SendSessionState v) =>
+      v.chatContext;
+  static const Field<SendSessionState, ChatTransferContext> _f$chatContext =
+      Field('chatContext', _$chatContext, opt: true);
   static String _$sessionId(SendSessionState v) => v.sessionId;
   static const Field<SendSessionState, String> _f$sessionId = Field(
     'sessionId',
@@ -79,6 +84,7 @@ class SendSessionStateMapper extends ClassMapperBase<SendSessionState> {
 
   @override
   final MappableFields<SendSessionState> fields = const {
+    #chatContext: _f$chatContext,
     #sessionId: _f$sessionId,
     #remoteSessionId: _f$remoteSessionId,
     #background: _f$background,
@@ -94,6 +100,7 @@ class SendSessionStateMapper extends ClassMapperBase<SendSessionState> {
 
   static SendSessionState _instantiate(DecodingData data) {
     return SendSessionState(
+      chatContext: data.dec(_f$chatContext),
       sessionId: data.dec(_f$sessionId),
       remoteSessionId: data.dec(_f$remoteSessionId),
       background: data.dec(_f$background),
@@ -170,6 +177,8 @@ extension SendSessionStateValueCopy<$R, $Out>
 
 abstract class SendSessionStateCopyWith<$R, $In extends SendSessionState, $Out>
     implements ClassCopyWith<$R, $In, $Out> {
+  ChatTransferContextCopyWith<$R, ChatTransferContext, ChatTransferContext>?
+  get chatContext;
   DeviceCopyWith<$R, Device, Device> get target;
   MapCopyWith<
     $R,
@@ -181,6 +190,7 @@ abstract class SendSessionStateCopyWith<$R, $In extends SendSessionState, $Out>
   ListCopyWith<$R, SendingTask, ObjectCopyWith<$R, SendingTask, SendingTask>>?
   get sendingTasks;
   $R call({
+    ChatTransferContext? chatContext,
     String? sessionId,
     String? remoteSessionId,
     bool? background,
@@ -207,6 +217,10 @@ class _SendSessionStateCopyWithImpl<$R, $Out>
   late final ClassMapperBase<SendSessionState> $mapper =
       SendSessionStateMapper.ensureInitialized();
   @override
+  ChatTransferContextCopyWith<$R, ChatTransferContext, ChatTransferContext>?
+  get chatContext =>
+      $value.chatContext?.copyWith.$chain((v) => call(chatContext: v));
+  @override
   DeviceCopyWith<$R, Device, Device> get target =>
       $value.target.copyWith.$chain((v) => call(target: v));
   @override
@@ -232,6 +246,7 @@ class _SendSessionStateCopyWithImpl<$R, $Out>
       : null;
   @override
   $R call({
+    Object? chatContext = $none,
     String? sessionId,
     Object? remoteSessionId = $none,
     bool? background,
@@ -245,6 +260,7 @@ class _SendSessionStateCopyWithImpl<$R, $Out>
     Object? errorMessage = $none,
   }) => $apply(
     FieldCopyWithData({
+      if (chatContext != $none) #chatContext: chatContext,
       if (sessionId != null) #sessionId: sessionId,
       if (remoteSessionId != $none) #remoteSessionId: remoteSessionId,
       if (background != null) #background: background,
@@ -260,6 +276,7 @@ class _SendSessionStateCopyWithImpl<$R, $Out>
   );
   @override
   SendSessionState $make(CopyWithData data) => SendSessionState(
+    chatContext: data.get(#chatContext, or: $value.chatContext),
     sessionId: data.get(#sessionId, or: $value.sessionId),
     remoteSessionId: data.get(#remoteSessionId, or: $value.remoteSessionId),
     background: data.get(#background, or: $value.background),

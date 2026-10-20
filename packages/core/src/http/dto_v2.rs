@@ -94,6 +94,8 @@ pub struct PrepareUploadRequestDtoV2 {
 
     /// Map of file ID to file metadata.
     pub files: HashMap<String, FileDto>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub localchat: Option<crate::http::chat_dto::ChatTransferRef>,
 }
 
 /// Prepare upload response DTO for v2.2 protocol.
@@ -226,6 +228,7 @@ mod tests {
     #[test]
     fn test_prepare_upload_request_v2() {
         let request = PrepareUploadRequestDtoV2 {
+            localchat: None,
             info: RegisterDtoV2 {
                 alias: "Sender".to_string(),
                 version: "2.2".to_string(),

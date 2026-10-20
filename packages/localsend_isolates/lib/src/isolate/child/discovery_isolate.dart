@@ -40,6 +40,9 @@ class DiscoveryAnnouncementTask implements DiscoveryTask {}
 /// Restarts the discovery, e.g. after the port or the network settings changed.
 class DiscoveryRestartTask implements DiscoveryTask {}
 
+/// Acknowledges that the current endpoint will no longer be announced.
+class DiscoveryPauseTask implements DiscoveryTask {}
+
 /// Scans the subnet of one network interface over HTTP.
 /// Completes (without events) when the scan is finished; the found devices
 /// arrive on the [DiscoveryListenTask] stream.
@@ -125,6 +128,9 @@ Future<void> setupDiscoveryIsolate(
           break;
         case DiscoveryRestartTask():
           ref.read(discoveryProvider).restartListener();
+          break;
+        case DiscoveryPauseTask():
+          await ref.read(discoveryProvider).pause();
           break;
         case DiscoverySubnetScanTask data:
           await ref

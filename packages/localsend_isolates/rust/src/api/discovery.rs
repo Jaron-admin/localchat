@@ -150,8 +150,8 @@ static RUNNING_DISCOVERY: Mutex<Option<Arc<DiscoveryInstance>>> = Mutex::const_n
 /// Announcements are received from the IPv4 [group] and, as a LocalSend
 /// extension, from the (currently hardcoded) IPv6 group `ff12::fd3a:e420`.
 ///
-/// [port] is used both to bind the multicast sockets and as the HTTP server
-/// port announced to other devices. [cert_pem] and [private_key_pem] are this
+/// [multicast_port] binds the discovery sockets; [http_port] is the actual
+/// HTTP port announced to other devices. [cert_pem] and [private_key_pem] are this
 /// device's TLS identity, sent as client certificate with every register
 /// request; [fingerprint] must be the certificate's SHA-256 fingerprint.
 ///
@@ -164,7 +164,8 @@ static RUNNING_DISCOVERY: Mutex<Option<Arc<DiscoveryInstance>>> = Mutex::const_n
 /// and [RsDiscovery::add_device].
 pub async fn start_discovery(
     group: String,
-    port: u16,
+    multicast_port: u16,
+    http_port: u16,
     network_whitelist: Option<Vec<String>>,
     network_blacklist: Option<Vec<String>>,
     alias: String,
@@ -197,7 +198,7 @@ pub async fn start_discovery(
             group,
             // Hardcoded for now; becomes a parameter once the app exposes it.
             group_v6: Some(DEFAULT_MULTICAST_GROUP_V6),
-            port,
+            port: multicast_port,
             interface_filter: InterfaceFilter {
                 whitelist: network_whitelist,
                 blacklist: network_blacklist,
@@ -208,7 +209,7 @@ pub async fn start_discovery(
                 device_model,
                 device_type,
                 fingerprint,
-                port,
+                port: http_port,
                 protocol,
                 download,
             },
@@ -266,9 +267,7 @@ impl RsDiscovery {
                     DiscoveryEvent::Discovered { device } | DiscoveryEvent::Updated { device },
                 ) => device,
                 Some(DiscoveryEvent::MulticastFailed) => {
-                    tracing::error!(
-                        "Multicast sockets failed, ending the discovery event stream"
-                    );
+                    tracing::error!("Multicast sockets failed, ending the discovery event stream");
                     break;
                 }
                 None => break,

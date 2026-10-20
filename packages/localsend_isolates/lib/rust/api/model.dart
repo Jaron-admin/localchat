@@ -4,7 +4,181 @@
 // ignore_for_file: invalid_use_of_internal_member, unused_import, unnecessary_import
 
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
+import 'package:freezed_annotation/freezed_annotation.dart' hide protected;
 import 'package:localsend_isolates/rust/frb_generated.dart';
+
+part 'model.freezed.dart';
+
+class ChatAck {
+  final String messageId;
+  final bool duplicate;
+
+  const ChatAck({
+    required this.messageId,
+    required this.duplicate,
+  });
+
+  @override
+  int get hashCode => messageId.hashCode ^ duplicate.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) || other is ChatAck && runtimeType == other.runtimeType && messageId == other.messageId && duplicate == other.duplicate;
+}
+
+class ChatCapabilities {
+  final int version;
+  final List<String> features;
+  final int maxTextBytes;
+
+  const ChatCapabilities({
+    required this.version,
+    required this.features,
+    required this.maxTextBytes,
+  });
+
+  @override
+  int get hashCode => version.hashCode ^ features.hashCode ^ maxTextBytes.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is ChatCapabilities &&
+          runtimeType == other.runtimeType &&
+          version == other.version &&
+          features == other.features &&
+          maxTextBytes == other.maxTextBytes;
+}
+
+enum ChatErrorCode {
+  denied,
+  conflict,
+  unavailable,
+  overloaded,
+}
+
+enum ChatInvitationStatus {
+  pending,
+  accepted,
+  rejected,
+}
+
+class ChatInvite {
+  final int version;
+  final String invitationId;
+
+  const ChatInvite({
+    required this.version,
+    required this.invitationId,
+  });
+
+  @override
+  int get hashCode => version.hashCode ^ invitationId.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is ChatInvite && runtimeType == other.runtimeType && version == other.version && invitationId == other.invitationId;
+}
+
+class ChatInviteStatus {
+  final String invitationId;
+  final ChatInvitationStatus status;
+
+  const ChatInviteStatus({
+    required this.invitationId,
+    required this.status,
+  });
+
+  @override
+  int get hashCode => invitationId.hashCode ^ status.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is ChatInviteStatus && runtimeType == other.runtimeType && invitationId == other.invitationId && status == other.status;
+}
+
+class ChatMessageDto {
+  final int version;
+  final String messageId;
+  final PlatformInt64 sentAtMs;
+  final String text;
+
+  const ChatMessageDto({
+    required this.version,
+    required this.messageId,
+    required this.sentAtMs,
+    required this.text,
+  });
+
+  @override
+  int get hashCode => version.hashCode ^ messageId.hashCode ^ sentAtMs.hashCode ^ text.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is ChatMessageDto &&
+          runtimeType == other.runtimeType &&
+          version == other.version &&
+          messageId == other.messageId &&
+          sentAtMs == other.sentAtMs &&
+          text == other.text;
+}
+
+@freezed
+sealed class ChatOperation with _$ChatOperation {
+  const ChatOperation._();
+
+  const factory ChatOperation.invite(
+    ChatInvite field0,
+  ) = ChatOperation_Invite;
+  const factory ChatOperation.inviteStatus(
+    String field0,
+  ) = ChatOperation_InviteStatus;
+  const factory ChatOperation.deliver(
+    ChatMessageDto field0,
+  ) = ChatOperation_Deliver;
+}
+
+@freezed
+sealed class ChatReply with _$ChatReply {
+  const ChatReply._();
+
+  const factory ChatReply.invitation(
+    ChatInviteStatus field0,
+  ) = ChatReply_Invitation;
+  const factory ChatReply.stored(
+    ChatAck field0,
+  ) = ChatReply_Stored;
+  const factory ChatReply.rejected(
+    ChatErrorCode field0,
+  ) = ChatReply_Rejected;
+}
+
+class ChatTransferRef {
+  final String messageId;
+  final String transferId;
+  final Map<String, String> attachments;
+
+  const ChatTransferRef({
+    required this.messageId,
+    required this.transferId,
+    required this.attachments,
+  });
+
+  @override
+  int get hashCode => messageId.hashCode ^ transferId.hashCode ^ attachments.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is ChatTransferRef &&
+          runtimeType == other.runtimeType &&
+          messageId == other.messageId &&
+          transferId == other.transferId &&
+          attachments == other.attachments;
+}
 
 enum DeviceType {
   mobile,
@@ -70,18 +244,25 @@ class FileMetadata {
 class PrepareUploadRequestDto {
   final RegisterDto info;
   final Map<String, FileDto> files;
+  final ChatTransferRef? localchat;
 
   const PrepareUploadRequestDto({
     required this.info,
     required this.files,
+    this.localchat,
   });
 
   @override
-  int get hashCode => info.hashCode ^ files.hashCode;
+  int get hashCode => info.hashCode ^ files.hashCode ^ localchat.hashCode;
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) || other is PrepareUploadRequestDto && runtimeType == other.runtimeType && info == other.info && files == other.files;
+      identical(this, other) ||
+      other is PrepareUploadRequestDto &&
+          runtimeType == other.runtimeType &&
+          info == other.info &&
+          files == other.files &&
+          localchat == other.localchat;
 }
 
 class PrepareUploadResponseDto {

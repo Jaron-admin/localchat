@@ -6,17 +6,18 @@ import 'package:localsend_app/config/init.dart';
 import 'package:localsend_app/config/theme.dart';
 import 'package:localsend_app/gen/strings.g.dart';
 import 'package:localsend_app/pages/home_page_controller.dart';
-import 'package:localsend_app/pages/tabs/receive_tab.dart';
-import 'package:localsend_app/pages/tabs/send_tab.dart';
+import 'package:localsend_app/pages/tabs/chat_tab.dart';
+import 'package:localsend_app/pages/tabs/nearby_tab.dart';
 import 'package:localsend_app/pages/tabs/settings_tab.dart';
 import 'package:localsend_app/provider/selection/selected_sending_files_provider.dart';
 import 'package:localsend_app/util/native/cross_file_converters.dart';
+import 'package:localsend_app/widget/chat/transfer_notice_banner.dart';
 import 'package:localsend_app/widget/responsive_builder.dart';
 import 'package:refena_flutter/refena_flutter.dart';
 
 enum HomeTab {
-  receive(Icons.wifi),
-  send(Icons.send),
+  chat(Icons.chat_bubble_outline),
+  nearby(Icons.wifi),
   settings(Icons.settings)
   ;
 
@@ -26,10 +27,10 @@ enum HomeTab {
 
   String get label {
     switch (this) {
-      case HomeTab.receive:
-        return t.receiveTab.title;
-      case HomeTab.send:
-        return t.sendTab.title;
+      case HomeTab.chat:
+        return t.chat.title;
+      case HomeTab.nearby:
+        return t.chat.nearby;
       case HomeTab.settings:
         return t.settingsTab.title;
     }
@@ -37,6 +38,11 @@ enum HomeTab {
 }
 
 class HomePage extends StatefulWidget {
+  static double navigationWidth(double width) => width < 700
+      ? 0
+      : width < 800
+      ? 72
+      : 200;
   final HomeTab initialTab;
 
   /// It is important for the initializing step
@@ -101,7 +107,7 @@ class _HomePageState extends State<HomePage> with Refena {
                 ),
               );
         }
-        vm.changeTab(HomeTab.send);
+        ref.redux(homePageControllerProvider).dispatch(OpenNearbyTransferAction(NearbySection.send));
       },
       child: ResponsiveBuilder(
         builder: (sizingInformation) {
@@ -109,43 +115,55 @@ class _HomePageState extends State<HomePage> with Refena {
             body: Row(
               children: [
                 if (!sizingInformation.isMobile)
-                  NavigationRail(
-                    selectedIndex: vm.currentTab.index,
-                    onDestinationSelected: (index) => vm.changeTab(HomeTab.values[index]),
-                    extended: sizingInformation.isDesktop,
-                    backgroundColor: Theme.of(context).cardColorWithElevation,
-                    leading: sizingInformation.isDesktop
-                        ? const Column(
-                            children: [
-                              SizedBox(height: 20),
-                              Text(
-                                'LocalSend',
-                                style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
-                                textAlign: TextAlign.center,
-                              ),
-                              SizedBox(height: 20),
-                            ],
-                          )
-                        : null,
-                    destinations: HomeTab.values.map((tab) {
-                      return NavigationRailDestination(
-                        icon: Icon(tab.icon),
-                        label: Text(tab.label),
-                      );
-                    }).toList(),
+                  SizedBox(
+                    width: HomePage.navigationWidth(MediaQuery.sizeOf(context).width),
+                    child: NavigationRail(
+                      minWidth: 72,
+                      minExtendedWidth: 200,
+                      selectedIndex: vm.currentTab.index,
+                      onDestinationSelected: (index) => vm.changeTab(HomeTab.values[index]),
+                      extended: sizingInformation.isDesktop,
+                      backgroundColor: Theme.of(context).cardColorWithElevation,
+                      leading: sizingInformation.isDesktop
+                          ? const Column(
+                              children: [
+                                SizedBox(height: 20),
+                                Text(
+                                  'LocalChat',
+                                  style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
+                                  textAlign: TextAlign.center,
+                                ),
+                                SizedBox(height: 20),
+                              ],
+                            )
+                          : null,
+                      destinations: HomeTab.values.map((tab) {
+                        return NavigationRailDestination(
+                          icon: Icon(tab.icon),
+                          label: Text(tab.label),
+                        );
+                      }).toList(),
+                    ),
                   ),
                 Expanded(
                   child: SafeArea(
                     left: sizingInformation.isMobile,
                     child: Stack(
                       children: [
-                        PageView(
-                          controller: vm.controller,
-                          physics: const NeverScrollableScrollPhysics(),
-                          children: const [
-                            ReceiveTab(),
-                            SendTab(),
-                            SettingsTab(),
+                        Column(
+                          children: [
+                            const TransferNoticeBanner(),
+                            Expanded(
+                              child: PageView(
+                                controller: vm.controller,
+                                physics: const NeverScrollableScrollPhysics(),
+                                children: const [
+                                  ChatTab(),
+                                  NearbyTab(),
+                                  SettingsTab(),
+                                ],
+                              ),
+                            ),
                           ],
                         ),
                         if (_dragAndDropIndicator)

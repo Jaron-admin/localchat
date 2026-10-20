@@ -8,13 +8,13 @@ import 'package:path/path.dart' as path;
 final _logger = Logger('SharedPreferencesPortable');
 
 /// Custom implementation of SharedPreferencesStorePlatform
-/// that uses a file named settings.json located next to the executable.
+/// that uses localchat-data/settings.json next to the executable.
 /// This is used to for portable mode.
 class SharedPreferencesPortable extends SharedPreferencesFile {
-  SharedPreferencesPortable() : super(filePath: _getSettingsPathFromExecutable(), beautify: true);
+  SharedPreferencesPortable({String? filePath}) : super(filePath: filePath ?? _getSettingsPathFromExecutable(), beautify: true);
 }
 
-/// Returns the absolute path to the settings.json file next to the executable.
+/// Returns the isolated portable settings path next to the executable.
 String _getSettingsPathFromExecutable() {
   return buildSettingsPath(
     executablePath: _resolveExecutable(),
@@ -37,7 +37,7 @@ String? _resolveExecutable() {
   }
 }
 
-/// Returns the absolute path to the settings.json file next to [executablePath],
+/// Returns the portable settings path beneath localchat-data next to [executablePath],
 /// falling back to [fallbackDirectory] when the executable path is unknown.
 /// [fallbackDirectory] is only called when the fallback is actually taken.
 @visibleForTesting
@@ -46,5 +46,5 @@ String buildSettingsPath({
   required String Function() fallbackDirectory,
 }) {
   final directory = executablePath == null ? fallbackDirectory() : File(executablePath).parent.path;
-  return path.join(directory, 'settings.json');
+  return path.join(directory, 'localchat-data', 'settings.json');
 }

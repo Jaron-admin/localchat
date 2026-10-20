@@ -5,6 +5,7 @@
 
 # Rust workspace build output
 /target/
+/build/
 
 # Linux AppImage
 /app/AppDir

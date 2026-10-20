@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
+import 'package:localsend_app/config/app_identity.dart';
 import 'package:logging/logging.dart';
 
 final _logger = Logger('ContextMenuHelper');
@@ -57,7 +58,7 @@ Future<bool> isContextMenuEnabled() async {
   }
 }
 
-const _windowsFileName = 'LocalSend';
+const _windowsFileName = AppIdentity.displayName;
 
 String _getWindowsFilePath(String appName) {
   final appData = Platform.environment['APPDATA'];

@@ -117,6 +117,7 @@ async fn start_test_server_with_verification(
                     ServerEventV2::PrepareUploadAborted { .. } => {}
                     ServerEventV2::CancelReceived { .. } => {}
                     ServerEventV2::ListenerFailed { .. } => {}
+                    ServerEventV2::ChatRequest { .. } => {}
                 }
             }
         }
@@ -182,6 +183,7 @@ fn file_dto(id: &str, name: &str, size: u64) -> FileDto {
 
 fn prepare_upload_request(files: &[FileDto]) -> PrepareUploadRequestDtoV2 {
     PrepareUploadRequestDtoV2 {
+        localchat: None,
         info: sender_info(),
         files: files
             .iter()

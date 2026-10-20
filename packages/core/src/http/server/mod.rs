@@ -1,3 +1,4 @@
+mod chat;
 pub mod common;
 pub mod internal;
 mod peer_ip;
@@ -62,6 +63,9 @@ pub(crate) struct V2State {
     /// The single upload session slot. Only one session can be active at a time.
     pub(crate) session: Mutex<Option<SessionStateV2>>,
 
+    /// Independent from the single file-transfer slot.
+    pub(crate) chat: chat::ChatState,
+
     /// Maps client IPs to the number of failed PIN attempts.
     pub(crate) pin_attempts: Mutex<LruCache<IpAddr, u32>>,
 }
@@ -109,6 +113,7 @@ impl AppState {
                 verify_checksums: config.verify_checksums,
                 event_tx: config.event_tx,
                 session: Mutex::new(None),
+                chat: chat::ChatState::default(),
                 pin_attempts: Mutex::new(LruCache::new(NonZeroUsize::new(200).unwrap())),
             })
         });
@@ -238,15 +243,66 @@ pub async fn start_with_port(
     web_config: Option<WebConfig>,
     stop_rx: oneshot::Receiver<()>,
 ) -> anyhow::Result<ServerHandle> {
+    let listener = tokio::net::TcpListener::bind((Ipv4Addr::UNSPECIFIED, port)).await?;
+    start_with_ipv4_listener(
+        listener,
+        tls_config,
+        info,
+        internal_config,
+        v2_config,
+        web_config,
+        stop_rx,
+    )
+    .await
+}
+
+/// Binds the preferred port, using an OS-assigned port only when it is occupied.
+/// The strict startup API remains available to other LocalSend clients.
+pub async fn start_with_port_fallback(
+    port: u16,
+    tls_config: Option<TlsConfig>,
+    info: ClientInfo,
+    internal_config: Option<InternalConfig>,
+    v2_config: Option<ServerConfigV2>,
+    web_config: Option<WebConfig>,
+    stop_rx: oneshot::Receiver<()>,
+) -> anyhow::Result<ServerHandle> {
+    let listener = match tokio::net::TcpListener::bind((Ipv4Addr::UNSPECIFIED, port)).await {
+        Ok(listener) => listener,
+        Err(error) if port != 0 && error.kind() == std::io::ErrorKind::AddrInUse => {
+            tokio::net::TcpListener::bind((Ipv4Addr::UNSPECIFIED, 0)).await?
+        }
+        Err(error) => return Err(error.into()),
+    };
+    start_with_ipv4_listener(
+        listener,
+        tls_config,
+        info,
+        internal_config,
+        v2_config,
+        web_config,
+        stop_rx,
+    )
+    .await
+}
+
+async fn start_with_ipv4_listener(
+    ipv4_listener: tokio::net::TcpListener,
+    tls_config: Option<TlsConfig>,
+    info: ClientInfo,
+    internal_config: Option<InternalConfig>,
+    v2_config: Option<ServerConfigV2>,
+    web_config: Option<WebConfig>,
+    stop_rx: oneshot::Receiver<()>,
+) -> anyhow::Result<ServerHandle> {
     // Installed before returning, so that a client built right after (which
     // skips the install when a provider exists) does not race the accept task.
     let _ = rustls::crypto::ring::default_provider().install_default();
 
-    let ipv4_socket_addr = SocketAddr::new(Ipv4Addr::UNSPECIFIED.into(), port);
+    let ipv4_socket_addr = ipv4_listener.local_addr()?;
     let info = Arc::new(Mutex::new(info));
     let state = AppState::new(info.clone(), internal_config, v2_config, web_config);
 
-    let ipv4_listener = tokio::net::TcpListener::bind(ipv4_socket_addr).await?;
     // With port 0, the IPv6 listener must reuse the port the IPv4 listener got.
     let bound_port = ipv4_listener.local_addr()?.port();
     let ipv6_socket_addr = SocketAddr::new(Ipv6Addr::UNSPECIFIED.into(), bound_port);
@@ -602,6 +658,10 @@ async fn handle_request_inner(mut req: Request<Incoming>) -> Result<Response<Box
     };
 
     let v2_enabled = state.v2.is_some();
+
+    if req.uri().path().starts_with("/api/localchat/v1/") {
+        return chat::handle(req, state, client_info).await;
+    }
 
     match (req.method(), req.uri().path()) {
         (&Method::GET, "/") => Ok(web::index(&state)),

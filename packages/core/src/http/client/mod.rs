@@ -51,6 +51,49 @@ pub enum ClientError {
 }
 
 impl LsHttpClient {
+    pub async fn chat_capabilities(
+        &self,
+        ip: &str,
+        port: u16,
+    ) -> Result<http::chat_dto::ChatCapabilities, ClientError> {
+        match self {
+            Self::V2(c) => c.chat_capabilities(ip, port).await,
+            Self::V3(_) => Err(anyhow::anyhow!("Chat is unsupported by the v3 backend").into()),
+        }
+    }
+    pub async fn chat_invite(
+        &self,
+        ip: &str,
+        port: u16,
+        payload: http::chat_dto::ChatInvite,
+    ) -> Result<http::chat_dto::ChatInviteStatus, ClientError> {
+        match self {
+            Self::V2(c) => c.chat_invite(ip, port, payload).await,
+            Self::V3(_) => Err(anyhow::anyhow!("Chat is unsupported by the v3 backend").into()),
+        }
+    }
+    pub async fn chat_invite_status(
+        &self,
+        ip: &str,
+        port: u16,
+        id: &str,
+    ) -> Result<http::chat_dto::ChatInviteStatus, ClientError> {
+        match self {
+            Self::V2(c) => c.chat_invite_status(ip, port, id).await,
+            Self::V3(_) => Err(anyhow::anyhow!("Chat is unsupported by the v3 backend").into()),
+        }
+    }
+    pub async fn chat_deliver(
+        &self,
+        ip: &str,
+        port: u16,
+        payload: http::chat_dto::ChatMessageDto,
+    ) -> Result<http::chat_dto::ChatAck, ClientError> {
+        match self {
+            Self::V2(c) => c.chat_deliver(ip, port, payload).await,
+            Self::V3(_) => Err(anyhow::anyhow!("Chat is unsupported by the v3 backend").into()),
+        }
+    }
     /// Creates a client for the given protocol version.
     ///
     /// `expected_fingerprint` pins the peer to the certificate with that

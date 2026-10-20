@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:collection/collection.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:localsend_app/gen/strings.g.dart';
 import 'package:localsend_app/model/persistence/color_mode.dart';
@@ -23,6 +22,7 @@ import 'package:localsend_isolates/constants.dart';
 import 'package:localsend_isolates/model/device.dart';
 import 'package:localsend_isolates/model/stored_security_context.dart';
 import 'package:logging/logging.dart';
+import 'package:path/path.dart' as path;
 import 'package:refena_flutter/refena_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shared_preferences_platform_interface/shared_preferences_platform_interface.dart';
@@ -31,16 +31,6 @@ import 'package:uuid/uuid.dart';
 part 'persistence_provider_migrations.dart';
 
 final _logger = Logger('PersistenceService');
-
-String get _windowsFile {
-  final appData = Platform.environment['APPDATA'];
-  return '$appData\\LocalSend\\settings.json';
-}
-
-String get _windowsLegacyFile {
-  final appData = Platform.environment['APPDATA'];
-  return '$appData\\org.localsend\\localsend_app\\shared_preferences.json';
-}
 
 // Version of the storage
 const _version = 'ls_version';
@@ -104,55 +94,35 @@ final persistenceProvider = Provider<PersistenceService>((ref) {
 class PersistenceService {
   final SharedPreferences _prefs;
   final bool isFirstAppStart;
+  final Directory dataDirectory;
 
-  PersistenceService._(this._prefs, this.isFirstAppStart);
+  PersistenceService._(this._prefs, this.isFirstAppStart, this.dataDirectory);
 
   static Future<PersistenceService> initialize({
     required bool supportsDynamicColors,
+    required Directory dataDirectory,
+    bool portable = false,
   }) async {
-    SharedPreferences prefs;
-
-    final portableStore = SharedPreferencesPortable();
-    bool usingLegacyStore = false;
-    if (checkPlatform(const [TargetPlatform.windows, TargetPlatform.linux, TargetPlatform.macOS]) && portableStore.exists()) {
-      _logger.info('Using portable settings.');
-      SharedPreferencesStorePlatform.instance = portableStore;
-    } else if (defaultTargetPlatform == TargetPlatform.windows) {
-      final legacyStore = SharedPreferencesFile(filePath: _windowsLegacyFile);
-      if (legacyStore.exists()) {
-        _logger.info('Using legacy settings. Will migrate in the next step.');
-        SharedPreferencesStorePlatform.instance = legacyStore;
-        usingLegacyStore = true;
-      } else {
-        SharedPreferencesStorePlatform.instance = SharedPreferencesFile(filePath: _windowsFile);
-      }
-    }
+    final settingsPath = path.join(dataDirectory.path, 'settings.json');
+    SharedPreferencesStorePlatform.instance = portable
+        ? SharedPreferencesPortable(filePath: settingsPath)
+        : SharedPreferencesFile(filePath: settingsPath);
 
     final bool isFirstAppStart;
     final existingVersion = (await SharedPreferencesStorePlatform.instance.getAll())['flutter.$_version'] as int?;
     _logger.info('Existing version: $existingVersion');
-    if (existingVersion == null && !usingLegacyStore) {
+    if (existingVersion == null) {
       isFirstAppStart = true;
       await SharedPreferencesStorePlatform.instance.setValue('Int', 'flutter.$_version', _latestVersion);
     } else {
       isFirstAppStart = false;
-      final fromVersion = existingVersion ?? 1;
+      final fromVersion = existingVersion;
       if (fromVersion < _latestVersion) {
         await _runMigrations(fromVersion);
       }
     }
 
-    try {
-      prefs = await SharedPreferences.getInstance();
-    } catch (e) {
-      if (checkPlatform([TargetPlatform.windows])) {
-        _logger.info('Could not initialize SharedPreferences, trying to delete corrupted settings file', e);
-        File(_windowsFile).deleteSync();
-        prefs = await SharedPreferences.getInstance();
-      } else {
-        throw Exception('Could not initialize SharedPreferences');
-      }
-    }
+    final prefs = await SharedPreferences.getInstance();
 
     // Locale configuration upon persistence initialisation to prevent unlocalised Alias generation
     final persistedLocale = prefs.getString(_localeKey);
@@ -203,7 +173,7 @@ class PersistenceService {
       await prefs.remove(launchMinimizedLegacyKey);
     }
 
-    return PersistenceService._(prefs, isFirstAppStart);
+    return PersistenceService._(prefs, isFirstAppStart, dataDirectory);
   }
 
   static Future<void> _initColorSetting(SharedPreferences prefs, bool supportsDynamicColors) async {

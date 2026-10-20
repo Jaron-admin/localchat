@@ -1,4 +1,4 @@
-package org.localsend.localsend_app
+package io.github.jaronadmin.localchat
 
 import android.annotation.SuppressLint
 import android.app.Activity

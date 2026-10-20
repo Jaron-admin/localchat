@@ -43,9 +43,10 @@ class Translations with BaseTranslations<AppLocale, Translations> {
 
   // Translations
 
-  /// en: 'LocalSend'
-  String get appName => 'LocalSend';
+  /// en: 'LocalChat'
+  String get appName => 'LocalChat';
 
+  late final Translations$chat$en chat = Translations$chat$en.internal(_root);
   late final Translations$general$en general = Translations$general$en.internal(_root);
   late final Translations$receiveTab$en receiveTab = Translations$receiveTab$en.internal(_root);
   late final Translations$sendTab$en sendTab = Translations$sendTab$en.internal(_root);
@@ -73,6 +74,219 @@ class Translations with BaseTranslations<AppLocale, Translations> {
   late final Translations$tray$en tray = Translations$tray$en.internal(_root);
   late final Translations$web$en web = Translations$web$en.internal(_root);
   late final Translations$assetPicker$en assetPicker = Translations$assetPicker$en.internal(_root);
+}
+
+// Path: chat
+class Translations$chat$en {
+  Translations$chat$en.internal(this._root);
+
+  final Translations _root; // ignore: unused_field
+
+  // Translations
+
+  /// en: 'Waiting for acceptance'
+  String get fileOffered => 'Waiting for acceptance';
+
+  /// en: 'Waiting for transfer'
+  String get fileWaiting => 'Waiting for transfer';
+
+  /// en: 'Transferring'
+  String get fileTransferring => 'Transferring';
+
+  /// en: 'File sent'
+  String get fileSent => 'File sent';
+
+  /// en: 'File saved'
+  String get fileSaved => 'File saved';
+
+  /// en: 'File declined'
+  String get fileRejected => 'File declined';
+
+  /// en: 'Transfer cancelled'
+  String get fileCancelled => 'Transfer cancelled';
+
+  /// en: 'Transfer failed or interrupted'
+  String get fileFailed => 'Transfer failed or interrupted';
+
+  /// en: 'Choose file again'
+  String get chooseFileAgain => 'Choose file again';
+
+  /// en: 'Cancel transfer'
+  String get cancelTransfer => 'Cancel transfer';
+
+  /// en: 'Open file'
+  String get openFile => 'Open file';
+
+  /// en: 'View transfer'
+  String get viewTransfer => 'View transfer';
+
+  /// en: 'Chats'
+  String get title => 'Chats';
+
+  /// en: 'Nearby'
+  String get nearby => 'Nearby';
+
+  /// en: 'Devices'
+  String get devices => 'Devices';
+
+  /// en: 'Send files'
+  String get sendFiles => 'Send files';
+
+  /// en: 'Receive files'
+  String get receiveFiles => 'Receive files';
+
+  /// en: 'Start a conversation with a nearby device.'
+  String get empty => 'Start a conversation with a nearby device.';
+
+  /// en: 'Choose a conversation'
+  String get choose => 'Choose a conversation';
+
+  /// en: 'Offline · last known address'
+  String get offline => 'Offline · last known address';
+
+  /// en: 'Discovered on LAN'
+  String get online => 'Discovered on LAN';
+
+  /// en: 'Address unavailable'
+  String get unknownAddress => 'Address unavailable';
+
+  /// en: 'My device'
+  String get ownDevice => 'My device';
+
+  /// en: 'All devices'
+  String get allDevices => 'All devices';
+
+  /// en: 'This device · LAN addresses'
+  String get localAddresses => 'This device · LAN addresses';
+
+  /// en: 'Refresh'
+  String get refresh => 'Refresh';
+
+  /// en: 'Connect by IP'
+  String get connect => 'Connect by IP';
+
+  /// en: 'No nearby devices yet. Open LocalChat on another device on the same network.'
+  String get noDevices => 'No nearby devices yet. Open LocalChat on another device on the same network.';
+
+  /// en: 'Message · Enter for a new line'
+  String get placeholder => 'Message · Enter for a new line';
+
+  /// en: 'Send'
+  String get send => 'Send';
+
+  /// en: 'Message exceeds 32 KiB (UTF-8).'
+  String get tooLarge => 'Message exceeds 32 KiB (UTF-8).';
+
+  /// en: 'Could not save. Your draft is still here.'
+  String get saveFailed => 'Could not save. Your draft is still here.';
+
+  /// en: 'Could not load local history. Retry without deleting your data.'
+  String get loadFailed => 'Could not load local history. Retry without deleting your data.';
+
+  /// en: 'Retry'
+  String get retry => 'Retry';
+
+  /// en: 'Load earlier messages'
+  String get older => 'Load earlier messages';
+
+  /// en: 'Queued'
+  String get queued => 'Queued';
+
+  /// en: 'Sending'
+  String get sending => 'Sending';
+
+  /// en: 'Delivered'
+  String get delivered => 'Delivered';
+
+  /// en: 'Unconfirmed'
+  String get unconfirmed => 'Unconfirmed';
+
+  /// en: 'Failed'
+  String get failed => 'Failed';
+
+  /// en: 'Rejected'
+  String get rejected => 'Rejected';
+
+  /// en: 'Delivered means saved on the other device, not read.'
+  String get receiptHint => 'Delivered means saved on the other device, not read.';
+
+  /// en: 'The device may be offline. Messages stay queued until it is discovered again.'
+  String get offlineHint => 'The device may be offline. Messages stay queued until it is discovered again.';
+
+  /// en: 'This device supports file transfers only.'
+  String get filesOnly => 'This device supports file transfers only.';
+
+  /// en: 'Chat support could not be verified. Check the connection and retry.'
+  String get unknownCapability => 'Chat support could not be verified. Check the connection and retry.';
+
+  /// en: 'Enable HTTPS encryption in Settings to chat.'
+  String get encryptionRequired => 'Enable HTTPS encryption in Settings to chat.';
+
+  /// en: 'This device must enable HTTPS to chat.'
+  String get peerEncryptionRequired => 'This device must enable HTTPS to chat.';
+
+  /// en: 'Request to chat'
+  String get invite => 'Request to chat';
+
+  /// en: 'Chat request'
+  String get inviteTitle => 'Chat request';
+
+  /// en: 'Check the fingerprint with the other device before accepting. This allows messages from this identity.'
+  String get inviteHint => 'Check the fingerprint with the other device before accepting. This allows messages from this identity.';
+
+  /// en: 'Waiting for the other device to accept…'
+  String get pending => 'Waiting for the other device to accept…';
+
+  /// en: 'Review request'
+  String get reviewInvite => 'Review request';
+
+  /// en: 'Accept'
+  String get accept => 'Accept';
+
+  /// en: 'Decline'
+  String get decline => 'Decline';
+
+  /// en: 'Certificate fingerprint'
+  String get fingerprint => 'Certificate fingerprint';
+
+  /// en: 'Both devices must accept before messaging.'
+  String get permissionNeeded => 'Both devices must accept before messaging.';
+
+  /// en: 'Chat permission was declined or revoked.'
+  String get permissionDenied => 'Chat permission was declined or revoked.';
+
+  /// en: 'This device is blocked.'
+  String get blocked => 'This device is blocked.';
+
+  /// en: 'Revoke chat permission'
+  String get revoke => 'Revoke chat permission';
+
+  /// en: 'Block this device'
+  String get block => 'Block this device';
+
+  /// en: 'Device and permissions'
+  String get details => 'Device and permissions';
+
+  /// en: 'Could not complete this action. Please retry.'
+  String get actionFailed => 'Could not complete this action. Please retry.';
+
+  /// en: 'Incoming files'
+  String get incomingFiles => 'Incoming files';
+
+  /// en: 'File transfer'
+  String get transferActive => 'File transfer';
+
+  /// en: 'New chat'
+  String get newChat => 'New chat';
+
+  /// en: 'Wants to chat'
+  String get requestIncoming => 'Wants to chat';
+
+  /// en: 'No messages yet.'
+  String get historyEmpty => 'No messages yet.';
+
+  /// en: 'Attach files'
+  String get attach => 'Attach files';
 }
 
 // Path: general
@@ -317,9 +531,9 @@ class Translations$networkInterfacesPage$en {
   /// en: 'Network Interfaces'
   String get title => 'Network Interfaces';
 
-  /// en: 'By default, LocalSend uses all available network interfaces. You can exclude unwanted networks here. You need to restart the server to apply the changes.'
+  /// en: 'By default, LocalChat uses all available network interfaces. You can exclude unwanted networks here. You need to restart the server to apply the changes.'
   String get info =>
-      'By default, LocalSend uses all available network interfaces. You can exclude unwanted networks here. You need to restart the server to apply the changes.';
+      'By default, LocalChat uses all available network interfaces. You can exclude unwanted networks here. You need to restart the server to apply the changes.';
 
   /// en: 'Preview'
   String get preview => 'Preview';
@@ -468,8 +682,8 @@ class Translations$receiveOptionsPage$en {
   /// en: 'Save to folder'
   String get destination => _root.settingsTab.receive.destination;
 
-  /// en: '(LocalSend folder)'
-  String get appDirectory => '(LocalSend folder)';
+  /// en: '(LocalChat folder)'
+  String get appDirectory => '(LocalChat folder)';
 
   /// en: 'Save media to gallery'
   String get saveToGallery => _root.settingsTab.receive.saveToGallery;
@@ -568,8 +782,8 @@ class Translations$webSharePage$en {
   /// en: 'The PIN is "{pin}"'
   String pinHint({required Object pin}) => 'The PIN is "${pin}"';
 
-  /// en: 'LocalSend uses a self-signed certificate. You need to accept it in your browser.'
-  String get encryptionHint => 'LocalSend uses a self-signed certificate. You need to accept it in your browser.';
+  /// en: 'LocalChat uses a self-signed certificate. You need to accept it in your browser.'
+  String get encryptionHint => 'LocalChat uses a self-signed certificate. You need to accept it in your browser.';
 
   /// en: 'Pending requests: {n}'
   String pendingRequests({required Object n}) => 'Pending requests: ${n}';
@@ -595,11 +809,11 @@ class Translations$aboutPage$en {
 
   // Translations
 
-  /// en: 'About LocalSend'
-  String get title => 'About LocalSend';
+  /// en: 'About LocalChat'
+  String get title => 'About LocalChat';
 
   List<String> get description => [
-    'LocalSend is a free, open-source app that allows you to securely share files and messages with nearby devices over your local network without needing an internet connection.',
+    'LocalChat is a free, open-source app that allows you to securely share files and messages with nearby devices over your local network without needing an internet connection.',
     'This app is available on Android, iOS, macOS, Windows and Linux. You can find all download options on the official homepage.',
   ];
 
@@ -627,8 +841,8 @@ class Translations$donationPage$en {
   /// en: 'Donate'
   String get title => 'Donate';
 
-  /// en: 'LocalSend is free, open-source and without any ads. If you like the app, you can support the development with a donation.'
-  String get info => 'LocalSend is free, open-source and without any ads. If you like the app, you can support the development with a donation.';
+  /// en: 'LocalChat is free, open-source and without any ads. If you like the app, you can support the development with a donation.'
+  String get info => 'LocalChat is free, open-source and without any ads. If you like the app, you can support the development with a donation.';
 
   /// en: 'Donate {amount}'
   String donate({required Object amount}) => 'Donate ${amount}';
@@ -813,8 +1027,8 @@ class Translations$tray$en {
   /// en: 'Open'
   String get open => _root.general.open;
 
-  /// en: 'Quit LocalSend'
-  String get close => 'Quit LocalSend';
+  /// en: 'Quit LocalChat'
+  String get close => 'Quit LocalChat';
 
   /// en: 'Exit'
   String get closeWindows => 'Exit';
@@ -1091,8 +1305,8 @@ class Translations$settingsTab$general$en {
   /// en: 'Autostart: Start hidden'
   String get launchMinimized => 'Autostart: Start hidden';
 
-  /// en: 'Show LocalSend in context menu'
-  String get showInContextMenu => 'Show LocalSend in context menu';
+  /// en: 'Show LocalChat in context menu'
+  String get showInContextMenu => 'Show LocalChat in context menu';
 
   /// en: 'Animations'
   String get animations => 'Animations';
@@ -1224,8 +1438,8 @@ class Translations$settingsTab$other$en {
   /// en: 'Other'
   String get title => 'Other';
 
-  /// en: 'Support LocalSend'
-  String get support => 'Support LocalSend';
+  /// en: 'Support LocalChat'
+  String get support => 'Support LocalChat';
 
   /// en: 'Donate'
   String get donate => 'Donate';
@@ -1638,9 +1852,9 @@ class Translations$dialogs$localNetworkUnauthorized$en {
   /// en: 'No permission'
   String get title => _root.dialogs.noPermission.title;
 
-  /// en: 'LocalSend can't find other devices without having the permission to scan the local network. Please grant this permission in the settings.'
+  /// en: 'LocalChat can't find other devices without having the permission to scan the local network. Please grant this permission in the settings.'
   String get description =>
-      'LocalSend can\'t find other devices without having the permission to scan the local network. Please grant this permission in the settings.';
+      'LocalChat can\'t find other devices without having the permission to scan the local network. Please grant this permission in the settings.';
 
   /// en: 'Settings'
   String get gotoSettings => 'Settings';
@@ -1805,8 +2019,8 @@ class Translations$dialogs$sendModeHelp$en {
   /// en: 'Sends files to multiple recipients. Selection will not be cleared after finished files transfer.'
   String get multiple => 'Sends files to multiple recipients. Selection will not be cleared after finished files transfer.';
 
-  /// en: 'Recipients who do not have LocalSend installed can download the selected files by opening the link in their browser.'
-  String get link => 'Recipients who do not have LocalSend installed can download the selected files by opening the link in their browser.';
+  /// en: 'Recipients who do not have LocalChat installed can download the selected files by opening the link in their browser.'
+  String get link => 'Recipients who do not have LocalChat installed can download the selected files by opening the link in their browser.';
 }
 
 // Path: dialogs.zoom

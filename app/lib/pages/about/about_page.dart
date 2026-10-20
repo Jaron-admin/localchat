@@ -1,6 +1,7 @@
 import 'package:collection/collection.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:localsend_app/config/app_identity.dart';
 import 'package:localsend_app/gen/strings.g.dart';
 import 'package:localsend_app/pages/debug/debug_page.dart';
 import 'package:localsend_app/util/i18n.dart';
@@ -40,12 +41,13 @@ class AboutPage extends StatelessWidget {
           Center(
             child: TextButton(
               onPressed: () async {
-                await launchUrl(Uri.parse('https://localsend.org'));
+                await launchUrl(Uri.parse(AppIdentity.repositoryUrl));
               },
-              child: const Text('localsend.org'),
+              child: const Text('Jaron-admin/localchat'),
             ),
           ),
           const SizedBox(height: 10),
+          const Text('LocalChat is based on LocalSend. Original author and contributor credits are retained.'),
           Text(t.aboutPage.description.join('\n\n')),
           const SizedBox(height: 20),
           Text(t.aboutPage.author, style: const TextStyle(fontWeight: FontWeight.bold)),
@@ -137,13 +139,13 @@ class AboutPage extends StatelessWidget {
             children: [
               TextButton(
                 onPressed: () async {
-                  await launchUrl(Uri.parse('https://localsend.org'));
+                  await launchUrl(Uri.parse(AppIdentity.repositoryUrl));
                 },
                 child: const Text('Homepage'),
               ),
               TextButton(
                 onPressed: () async {
-                  await launchUrl(Uri.parse('https://github.com/localsend/localsend'), mode: LaunchMode.externalApplication);
+                  await launchUrl(Uri.parse(AppIdentity.repositoryUrl), mode: LaunchMode.externalApplication);
                 },
                 child: const Text('Source Code (Github)'),
               ),
@@ -151,7 +153,7 @@ class AboutPage extends StatelessWidget {
                 onPressed: () async {
                   await launchUrl(Uri.parse('https://codeberg.org/localsend/localsend'), mode: LaunchMode.externalApplication);
                 },
-                child: const Text('Source Code (Codeberg)'),
+                child: const Text('Upstream LocalSend (Codeberg)'),
               ),
               TextButton(
                 onPressed: () async {

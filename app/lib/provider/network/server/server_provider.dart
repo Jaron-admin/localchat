@@ -5,6 +5,9 @@ import 'package:localsend_app/gen/strings.g.dart';
 import 'package:localsend_app/model/cross_file.dart';
 import 'package:localsend_app/model/state/send/web/web_send_state.dart';
 import 'package:localsend_app/model/state/server/server_state.dart';
+import 'package:localsend_app/provider/chat/chat_repository_provider.dart';
+import 'package:localsend_app/provider/localchat_instance_provider.dart';
+import 'package:localsend_app/provider/network/server/controller/chat_controller.dart';
 import 'package:localsend_app/provider/network/server/controller/receive_controller.dart';
 import 'package:localsend_app/provider/network/server/controller/send_controller.dart';
 import 'package:localsend_app/provider/network/server/server_utils.dart';
@@ -71,6 +74,12 @@ class ServerService extends Notifier<ServerState?> {
   );
 
   late final _receiveController = ReceiveController(_serverUtils);
+  late final _chatController = ChatController(
+    ref.read(chatRepositoryProvider),
+    respond: (requestId, reply) async {
+      await ref.redux(parentIsolateProvider).dispatchAsync(IsolateHttpServerChatResponseAction(requestId: requestId, reply: reply));
+    },
+  );
   late final _sendController = SendController(_serverUtils);
 
   StreamSubscription<HttpServerEvent>? _subscription;
@@ -139,7 +148,9 @@ class ServerService extends Notifier<ServerState?> {
 
     // The server isolate derives its configuration from the sync state,
     // so it must be published before the start task.
-    _syncServerState(alias: alias, port: port, https: https, serverRunning: true, download: webSendState != null);
+    _syncServerState(alias: alias, port: port, https: https, serverRunning: false, download: webSendState != null);
+    await ref.redux(parentIsolateProvider).dispatchAsync(IsolateDiscoveryPauseAction());
+    await ref.read(localChatInstanceProvider)?.clearEndpoint();
 
     final settings = ref.read(settingsProvider);
     final webActive = webSendState != null || webUpload;
@@ -182,12 +193,12 @@ class ServerService extends Notifier<ServerState?> {
           ),
         );
 
-    final started = Completer<void>();
+    final started = Completer<int>();
     final subscription = events.listen(
       (event) {
         if (event is HttpServerStartedEvent) {
           if (!started.isCompleted) {
-            started.complete();
+            started.complete(event.port);
           }
           return;
         }
@@ -203,7 +214,7 @@ class ServerService extends Notifier<ServerState?> {
     );
 
     try {
-      await started.future;
+      port = await started.future;
     } catch (e) {
       await subscription.cancel();
       _syncServerState(alias: alias, port: port, https: https, serverRunning: false, download: false);
@@ -224,12 +235,19 @@ class ServerService extends Notifier<ServerState?> {
     );
 
     state = newServerState;
+    await ref.read(localChatInstanceProvider)?.publishEndpoint(port: port);
     _logger.info('Server started. (Port: $port, ${https ? 'HTTPS' : 'HTTP'} only)');
     return newServerState;
   }
 
   Future<void> stopServer() async {
     _logger.info('Stopping server...');
+    final current = state;
+    if (current != null) {
+      _syncServerState(alias: current.alias, port: current.port, https: current.https, serverRunning: false, download: false);
+    }
+    await ref.redux(parentIsolateProvider).dispatchAsync(IsolateDiscoveryPauseAction());
+    await ref.read(localChatInstanceProvider)?.clearEndpoint();
     await _subscription?.cancel();
     _subscription = null;
     await ref.redux(parentIsolateProvider).dispatchAsync(IsolateHttpServerStopAction());
@@ -334,6 +352,8 @@ class ServerService extends Notifier<ServerState?> {
 
   void _handleEvent(HttpServerEvent event) {
     switch (event) {
+      case HttpServerChatRequestEvent():
+        unawaited(_chatController.onRequest(event));
       case HttpServerStartedEvent():
         break;
       case HttpServerRegisterEvent():

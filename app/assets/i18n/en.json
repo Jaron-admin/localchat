@@ -1,5 +1,35 @@
 {
-  "appName": "LocalSend",
+  "appName": "LocalChat",
+  "chat": {
+    "fileOffered": "Waiting for acceptance",
+    "fileWaiting": "Waiting for transfer",
+    "fileTransferring": "Transferring",
+    "fileSent": "File sent",
+    "fileSaved": "File saved",
+    "fileRejected": "File declined",
+    "fileCancelled": "Transfer cancelled",
+    "fileFailed": "Transfer failed or interrupted",
+    "chooseFileAgain": "Choose file again",
+    "cancelTransfer": "Cancel transfer",
+    "openFile": "Open file",
+    "viewTransfer": "View transfer",
+    "title": "Chats", "nearby": "Nearby", "devices": "Devices", "sendFiles": "Send files", "receiveFiles": "Receive files",
+    "empty": "Start a conversation with a nearby device.", "choose": "Choose a conversation", "offline": "Offline · last known address",
+    "online": "Discovered on LAN", "unknownAddress": "Address unavailable", "ownDevice": "My device", "allDevices": "All devices",
+    "localAddresses": "This device · LAN addresses", "refresh": "Refresh", "connect": "Connect by IP", "noDevices": "No nearby devices yet. Open LocalChat on another device on the same network.",
+    "placeholder": "Message · Enter for a new line", "send": "Send", "tooLarge": "Message exceeds 32 KiB (UTF-8).", "saveFailed": "Could not save. Your draft is still here.",
+    "loadFailed": "Could not load local history. Retry without deleting your data.", "retry": "Retry", "older": "Load earlier messages",
+    "queued": "Queued", "sending": "Sending", "delivered": "Delivered", "unconfirmed": "Unconfirmed", "failed": "Failed", "rejected": "Rejected",
+    "receiptHint": "Delivered means saved on the other device, not read.", "offlineHint": "The device may be offline. Messages stay queued until it is discovered again.",
+    "filesOnly": "This device supports file transfers only.", "unknownCapability": "Chat support could not be verified. Check the connection and retry.",
+    "encryptionRequired": "Enable HTTPS encryption in Settings to chat.", "peerEncryptionRequired": "This device must enable HTTPS to chat.",
+    "invite": "Request to chat", "inviteTitle": "Chat request", "inviteHint": "Check the fingerprint with the other device before accepting. This allows messages from this identity.",
+    "pending": "Waiting for the other device to accept…", "reviewInvite": "Review request", "accept": "Accept", "decline": "Decline",
+    "fingerprint": "Certificate fingerprint", "permissionNeeded": "Both devices must accept before messaging.", "permissionDenied": "Chat permission was declined or revoked.",
+    "blocked": "This device is blocked.", "revoke": "Revoke chat permission", "block": "Block this device", "details": "Device and permissions",
+    "actionFailed": "Could not complete this action. Please retry.", "incomingFiles": "Incoming files", "viewTransfer": "View transfer", "transferActive": "File transfer",
+    "newChat": "New chat", "requestIncoming": "Wants to chat", "historyEmpty": "No messages yet.", "attach": "Attach files"
+  },
   "general": {
     "accept": "Accept",
     "accepted": "Accepted",
@@ -109,7 +139,7 @@
       "minimizeToTray": "Minimize to the System Tray/Menu Bar when closing",
       "launchAtStartup": "Autostart after login",
       "launchMinimized": "Autostart: Start hidden",
-      "showInContextMenu": "Show LocalSend in context menu",
+      "showInContextMenu": "Show LocalChat in context menu",
       "animations": "Animations"
     },
     "receive": {
@@ -152,7 +182,7 @@
     },
     "other": {
       "title": "Other",
-      "support": "Support LocalSend",
+      "support": "Support LocalChat",
       "donate": "Donate",
       "privacyPolicy": "Privacy Policy",
       "termsOfUse": "Terms of Use"
@@ -180,7 +210,7 @@
   },
   "networkInterfacesPage": {
     "title": "Network Interfaces",
-    "info": "By default, LocalSend uses all available network interfaces. You can exclude unwanted networks here. You need to restart the server to apply the changes.",
+    "info": "By default, LocalChat uses all available network interfaces. You can exclude unwanted networks here. You need to restart the server to apply the changes.",
     "preview": "Preview",
     "whitelist": "Whitelist",
     "blacklist": "Blacklist"
@@ -241,7 +271,7 @@
   "receiveOptionsPage": {
     "title": "Options",
     "destination": "@:settingsTab.receive.destination",
-    "appDirectory": "(LocalSend folder)",
+    "appDirectory": "(LocalChat folder)",
     "saveToGallery": "@:settingsTab.receive.saveToGallery",
     "saveToGalleryOff": "Turned off automatically because there are folders."
   },
@@ -293,16 +323,16 @@
     "autoAccept": "Automatically accept requests",
     "requirePin": "Require PIN",
     "pinHint": "The PIN is \"{pin}\"",
-    "encryptionHint": "LocalSend uses a self-signed certificate. You need to accept it in your browser.",
+    "encryptionHint": "LocalChat uses a self-signed certificate. You need to accept it in your browser.",
     "pendingRequests": "Pending requests: {n}"
   },
   "webReceivePage": {
     "title": "Receive via link"
   },
   "aboutPage": {
-    "title": "About LocalSend",
+    "title": "About LocalChat",
     "description": [
-      "LocalSend is a free, open-source app that allows you to securely share files and messages with nearby devices over your local network without needing an internet connection.",
+      "LocalChat is a free, open-source app that allows you to securely share files and messages with nearby devices over your local network without needing an internet connection.",
       "This app is available on Android, iOS, macOS, Windows and Linux. You can find all download options on the official homepage."
     ],
     "author": "Author",
@@ -312,7 +342,7 @@
   },
   "donationPage": {
     "title": "Donate",
-    "info": "LocalSend is free, open-source and without any ads. If you like the app, you can support the development with a donation.",
+    "info": "LocalChat is free, open-source and without any ads. If you like the app, you can support the development with a donation.",
     "donate": "Donate {amount}",
     "thanks": "Thank you very much!",
     "restore": "Restore purchase"
@@ -468,7 +498,7 @@
     },
     "localNetworkUnauthorized": {
       "title": "@:dialogs.noPermission.title",
-      "description": "LocalSend can't find other devices without having the permission to scan the local network. Please grant this permission in the settings.",
+      "description": "LocalChat can't find other devices without having the permission to scan the local network. Please grant this permission in the settings.",
       "gotoSettings": "Settings"
     },
     "messageInput": {
@@ -515,7 +545,7 @@
       "title": "Send modes",
       "single": "Sends files to one recipient. Selection will be cleared after finished files transfer.",
       "multiple": "Sends files to multiple recipients. Selection will not be cleared after finished files transfer.",
-      "link": "Recipients who do not have LocalSend installed can download the selected files by opening the link in their browser."
+      "link": "Recipients who do not have LocalChat installed can download the selected files by opening the link in their browser."
     },
     "zoom": {
       "title": "URL"
@@ -528,7 +558,7 @@
   "tray": {
     "@info": "Apple Guidelines are very strict about the \"close\" wording.",
     "open": "@:general.open",
-    "close": "Quit LocalSend",
+    "close": "Quit LocalChat",
     "closeWindows": "Exit"
   },
   "web": {

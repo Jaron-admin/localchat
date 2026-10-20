@@ -11,6 +11,11 @@ class HttpServerService {
 
   bool get running => _server != null;
 
+  Future<int> get port => _requireServer().port();
+
+  Future<void> respondChatRequest({required String requestId, required ChatReply reply}) =>
+      _requireServer().respondChatRequest(requestId: requestId, reply: reply);
+
   /// Starts the server and returns the stream of server events.
   /// The stream ends when the server is stopped.
   Future<Stream<RsServerEvent>> start({
@@ -49,8 +54,8 @@ class HttpServerService {
 
   /// Answers a pending prepare-upload request.
   /// [acceptedFileIds] is the subset of the offered files to accept; `null` declines the request.
-  Future<void> respondPrepareUpload({required List<String>? acceptedFileIds}) async {
-    await _requireServer().respondPrepareUpload(acceptedFileIds: acceptedFileIds);
+  Future<void> respondPrepareUpload({required String sessionId, required List<String>? acceptedFileIds}) async {
+    await _requireServer().respondPrepareUpload(sessionId: sessionId, acceptedFileIds: acceptedFileIds);
   }
 
   /// Answers a pending file upload with the target the file should be saved to

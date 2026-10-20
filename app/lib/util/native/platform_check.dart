@@ -1,5 +1,6 @@
 import 'dart:io' show Platform;
 import 'package:flutter/foundation.dart';
+import 'package:localsend_app/config/app_identity.dart';
 
 bool checkPlatform(List<TargetPlatform> platforms, {bool web = false}) {
   if (web && kIsWeb) {
@@ -57,5 +58,5 @@ bool checkPlatformIsNotWaylandDesktop() {
 
 /// This platform supports payment (in-app purchase)
 bool checkPlatformSupportPayment() {
-  return checkPlatform([TargetPlatform.android, TargetPlatform.iOS, TargetPlatform.macOS]);
+  return AppIdentity.purchasesEnabled && checkPlatform([TargetPlatform.android, TargetPlatform.iOS, TargetPlatform.macOS]);
 }

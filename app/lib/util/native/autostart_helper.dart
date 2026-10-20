@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
+import 'package:localsend_app/config/app_identity.dart';
 import 'package:localsend_app/util/native/macos_channel.dart';
 import 'package:logging/logging.dart';
 import 'package:package_info_plus/package_info_plus.dart';
@@ -107,7 +108,7 @@ Future<bool> isAutoStartHidden() async {
   }
 }
 
-const _windowsRegistryKeyValue = 'LocalSend';
+const _windowsRegistryKeyValue = AppIdentity.displayName;
 
 RegistryKey _getWindowsRegistryKey() {
   return Registry.openPath(

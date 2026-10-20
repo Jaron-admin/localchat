@@ -1,4 +1,31 @@
-# LocalSend
+# LocalChat
+
+LocalChat 是从 [LocalSend](https://github.com/localsend/localsend) v1.18.2 派生的独立应用：
+保留局域网文件传输，在此基础上加入一对一会话、历史记录和文件卡片。
+本项目不属于 LocalSend 官方发行，沿用 [Apache-2.0](LICENSE) 许可及上游版权。
+
+- 无账号、无中心服务器；优先同一局域网，发现设备时显示 IP、端口和平台。
+- 使用证书身份及双向许可建立聊天关系，支持自己的设备和不同的人。
+- 文字先保存后确认，离线保留历史及待发消息；“已送达”不代表“已读”。
+- 在会话中发送文件，保留接受/拒绝和原有保存路径处理，逐文件显示结果。
+- 支持的代码目标为 Windows、macOS、Linux、Android、iOS。**目前仅 Windows 完成构建与部分真实运行验证，其他平台未验证。**
+
+第一版只做一对一；不包含群聊、跨网中继、文件断点续传或手机锁屏持续收消息保证。
+聊天需要 HTTPS；原版 LocalSend 设备继续使用“附近”中的文件传输功能。
+文件发送要求对端在线，不会作为离线文字队列自动重传。
+
+开始使用：两端连接同一局域网并打开应用 → 在“附近”选择设备 → 发送聊天邀请 →
+核对设备指纹并接受 → 在聊天框发文字或附件。多网卡时可手动输入 `IP:实际端口`，
+IPv6 使用 `[fe80::1%7]:实际端口`。连接失败或发现记录过期后显示离线；重新发现后继续发送待发文字。
+
+开发说明：[构建](support/docs/localchat-build.md) · [协议](support/docs/localchat-protocol-v1.md) ·
+[逐项验收与限制](support/docs/localchat-acceptance.md) · [隐私](PRIVACY.md)。
+Windows x64 开发预览见[本项目 Releases](https://github.com/Jaron-admin/localchat/releases)。
+当前没有经过五平台验收的正式发行包；下方下载、截图和赞助信息均属于上游 LocalSend。
+
+---
+
+## 上游 LocalSend 项目资料
 
 [![CI status][ci-badge]][ci-workflow]
 [![Translations][translate-badge]][translate-link]

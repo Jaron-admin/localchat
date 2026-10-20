@@ -17,8 +17,8 @@ import 'package:localsend_isolates/rust/frb_generated.dart';
 /// Announcements are received from the IPv4 [group] and, as a LocalSend
 /// extension, from the (currently hardcoded) IPv6 group `ff12::fd3a:e420`.
 ///
-/// [port] is used both to bind the multicast sockets and as the HTTP server
-/// port announced to other devices. [cert_pem] and [private_key_pem] are this
+/// [multicast_port] binds the discovery sockets; [http_port] is the actual
+/// HTTP port announced to other devices. [cert_pem] and [private_key_pem] are this
 /// device's TLS identity, sent as client certificate with every register
 /// request; [fingerprint] must be the certificate's SHA-256 fingerprint.
 ///
@@ -31,7 +31,8 @@ import 'package:localsend_isolates/rust/frb_generated.dart';
 /// and [RsDiscovery::add_device].
 Future<RsDiscovery> startDiscovery({
   required String group,
-  required int port,
+  required int multicastPort,
+  required int httpPort,
   List<String>? networkWhitelist,
   List<String>? networkBlacklist,
   required String alias,
@@ -46,7 +47,8 @@ Future<RsDiscovery> startDiscovery({
   required BigInt timeoutMs,
 }) => RustLib.instance.api.crateApiDiscoveryStartDiscovery(
   group: group,
-  port: port,
+  multicastPort: multicastPort,
+  httpPort: httpPort,
   networkWhitelist: networkWhitelist,
   networkBlacklist: networkBlacklist,
   alias: alias,

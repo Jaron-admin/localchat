@@ -4,9 +4,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:localsend_app/pages/home_page.dart';
 import 'package:localsend_app/pages/home_page_controller.dart';
+import 'package:localsend_app/provider/chat/chat_runtime_provider.dart';
 import 'package:localsend_app/util/native/file_picker.dart';
 import 'package:localsend_app/util/native/platform_check.dart';
 import 'package:localsend_app/widget/watcher/window_watcher.dart';
+import 'package:refena_flutter/addons.dart';
 import 'package:refena_flutter/refena_flutter.dart';
 import 'package:routerino/routerino.dart';
 
@@ -33,20 +35,24 @@ class ShortcutWatcher extends StatelessWidget {
         LogicalKeySet(LogicalKeyboardKey.escape): _PopPageIntent(),
 
         // Control+V and Command+V
-        LogicalKeySet(LogicalKeyboardKey.control, LogicalKeyboardKey.keyV): _PasteIntent(),
-        LogicalKeySet(LogicalKeyboardKey.meta, LogicalKeyboardKey.keyV): _PasteIntent(),
+        LogicalKeySet(LogicalKeyboardKey.control, LogicalKeyboardKey.keyV): const PasteTextIntent(SelectionChangedCause.keyboard),
+        LogicalKeySet(LogicalKeyboardKey.meta, LogicalKeyboardKey.keyV): const PasteTextIntent(SelectionChangedCause.keyboard),
       },
       child: Actions(
         actions: {
-          _ExitAppIntent: CallbackAction(onInvoke: (_) => exit(0)),
-          _PopPageIntent: CallbackAction(onInvoke: (_) async => Navigator.of(Routerino.context).maybePop()),
-          _PasteIntent: CallbackAction(
+          _ExitAppIntent: CallbackAction(
             onInvoke: (_) async {
+              await context.read(chatRuntimeProvider).close();
+              exit(0);
+            },
+          ),
+          _PopPageIntent: CallbackAction(onInvoke: (_) async => Navigator.of(Routerino.context).maybePop()),
+          PasteTextIntent: _PasteAction(
+            pasteFiles: () async {
               await context.global.dispatchAsync(PickFileAction(option: FilePickerOption.clipboard, context: context));
               if (context.mounted) {
-                context.redux(homePageControllerProvider).dispatch(ChangeTabAction(HomeTab.send));
+                context.redux(homePageControllerProvider).dispatch(OpenNearbyTransferAction(NearbySection.send));
               }
-              return null;
             },
           ),
           _CloseWindowIntent: CallbackAction<_CloseWindowIntent>(
@@ -62,6 +68,7 @@ class ShortcutWatcher extends StatelessWidget {
           _OpenSettingsIntent: CallbackAction(
             onInvoke: (_) async {
               context.redux(homePageControllerProvider).dispatch(ChangeTabAction(HomeTab.settings));
+              context.global.dispatch(NavigateAction.popUntilRoot());
               return null;
             },
           ),
@@ -76,11 +83,21 @@ class _ExitAppIntent extends Intent {}
 
 class _PopPageIntent extends Intent {}
 
-class _PasteIntent extends Intent {}
-
 class _CloseWindowIntent extends Intent {}
 
 class _OpenSettingsIntent extends Intent {}
+
+/// EditableText's paste action is overridable. Delegate to that action while
+/// editing; use the original file-paste behavior only outside an editor.
+class _PasteAction extends Action<PasteTextIntent> {
+  final Future<void> Function() pasteFiles;
+  _PasteAction({required this.pasteFiles});
+  @override
+  Object? invoke(PasteTextIntent intent) {
+    if (callingAction != null) return callingAction!.invoke(intent);
+    return pasteFiles();
+  }
+}
 
 bool _ignoreMetaLast = false;
 bool _isFakeMetaKey() {

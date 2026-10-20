@@ -4,7 +4,7 @@ project(localsend_app LANGUAGES CXX)
 
 # The name of the executable created for the application. Change this to change
 # the on-disk name of your application.
-set(BINARY_NAME "localsend_app")
+set(BINARY_NAME "localchat")
 
 # Explicitly opt in to modern CMake behaviors to avoid warnings with recent
 # versions of CMake.
@@ -31,6 +31,11 @@ set(CMAKE_CXX_FLAGS_PROFILE "${CMAKE_CXX_FLAGS_RELEASE}")
 
 # Use Unicode for all projects.
 add_definitions(-DUNICODE -D_UNICODE)
+
+# Plugin sources are UTF-8, independently of the host Windows ANSI code page.
+if(MSVC)
+  add_compile_options(/utf-8)
+endif()
 
 # Compilation settings that should be applied to most targets.
 #
@@ -74,12 +79,16 @@ set(INSTALL_BUNDLE_LIB_DIR "${CMAKE_INSTALL_PREFIX}")
 install(TARGETS ${BINARY_NAME} RUNTIME DESTINATION "${CMAKE_INSTALL_PREFIX}"
   COMPONENT Runtime)
 
-install(FILES
-  "${BINARY_NAME}.exe.manifest"
-  "localsend_msix_helper.msix"
-  "install_msix_helper.ps1"
-  DESTINATION "${CMAKE_INSTALL_PREFIX}"
-  COMPONENT Runtime)
+# A normal development build can run without a registered MSIX identity.
+# Packaging scripts generate the helper; distribution requires the maintainer's certificate.
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/localchat_msix_helper.msix")
+  install(FILES
+    "${BINARY_NAME}.exe.manifest"
+    "localchat_msix_helper.msix"
+    "install_msix_helper.ps1"
+    DESTINATION "${CMAKE_INSTALL_PREFIX}"
+    COMPONENT Runtime)
+endif()
 
 install(FILES "${FLUTTER_ICU_DATA_FILE}" DESTINATION "${INSTALL_BUNDLE_DATA_DIR}"
   COMPONENT Runtime)
@@ -92,6 +101,12 @@ if(PLUGIN_BUNDLED_LIBRARIES)
     DESTINATION "${INSTALL_BUNDLE_LIB_DIR}"
     COMPONENT Runtime)
 endif()
+
+# Native assets from Dart build hooks (including SQLite) are not Flutter plugins.
+set(NATIVE_ASSETS_DIR "${PROJECT_BUILD_DIR}native_assets/windows/")
+install(DIRECTORY "${NATIVE_ASSETS_DIR}"
+  DESTINATION "${INSTALL_BUNDLE_LIB_DIR}"
+  COMPONENT Runtime)
 
 # Fully re-copy the assets directory on each build to avoid having stale files
 # from a previous install.

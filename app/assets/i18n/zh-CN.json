@@ -1,5 +1,35 @@
 {
-  "appName": "LocalSend",
+  "appName": "LocalChat",
+  "chat": {
+    "chooseFileAgain": "重新选取文件发送",
+    "fileOffered": "等待接受",
+    "fileWaiting": "等待传输",
+    "fileTransferring": "正在传输",
+    "fileSent": "文件已发送",
+    "fileSaved": "文件已保存",
+    "fileRejected": "文件已拒绝",
+    "fileCancelled": "传输已取消",
+    "fileFailed": "传输失败或中断",
+    "cancelTransfer": "取消传输",
+    "openFile": "打开文件",
+    "viewTransfer": "查看传输",
+    "title": "聊天", "nearby": "附近设备", "devices": "设备", "sendFiles": "发送文件", "receiveFiles": "接收文件",
+    "empty": "选择附近设备，开始聊天。", "choose": "选择一个会话", "offline": "离线 · 上次地址",
+    "online": "已在局域网发现", "unknownAddress": "暂无地址", "ownDevice": "我的设备", "allDevices": "全部设备",
+    "localAddresses": "本机 · 局域网地址", "refresh": "刷新", "connect": "通过 IP 连接", "noDevices": "暂未发现附近设备。请在同一局域网的另一台设备上打开 LocalChat。",
+    "placeholder": "输入消息 · 回车换行", "send": "发送", "tooLarge": "消息超过 32 KiB（UTF-8）。", "saveFailed": "保存失败，草稿已保留。",
+    "loadFailed": "无法读取本地历史，请重试，不要删除数据。", "retry": "重试", "older": "加载更早消息",
+    "queued": "待发送", "sending": "发送中", "delivered": "已送达", "unconfirmed": "未确认", "failed": "失败", "rejected": "已拒绝",
+    "receiptHint": "已送达表示对方设备已保存，不代表已读。", "offlineHint": "对方可能已离线，消息会保留，重新发现设备后再发送。",
+    "filesOnly": "此设备仅支持文件传输。", "unknownCapability": "暂时无法确认聊天支持，请检查连接后重试。",
+    "encryptionRequired": "请在设置中开启 HTTPS 加密后聊天。", "peerEncryptionRequired": "对方设备需要开启 HTTPS 才能聊天。",
+    "invite": "请求聊天", "inviteTitle": "聊天请求", "inviteHint": "接受前，可与对方核对证书指纹。接受后允许此身份发送消息。",
+    "pending": "等待对方接受…", "reviewInvite": "查看请求", "accept": "接受", "decline": "拒绝",
+    "fingerprint": "证书指纹", "permissionNeeded": "双方接受后才可发送消息。", "permissionDenied": "聊天许可已被拒绝或撤销。",
+    "blocked": "已屏蔽此设备。", "revoke": "撤销聊天许可", "block": "屏蔽此设备", "details": "设备与权限",
+    "actionFailed": "操作未完成，请重试。", "incomingFiles": "收到文件请求", "viewTransfer": "查看传输", "transferActive": "文件传输",
+    "newChat": "新聊天", "requestIncoming": "请求与你聊天", "historyEmpty": "还没有消息。", "attach": "添加文件"
+  },
   "general": {
     "accept": "接受",
     "accepted": "已接受",
@@ -109,7 +139,7 @@
       "minimizeToTray": "关闭时最小化到系统托盘",
       "launchAtStartup": "登录系统后自动启动程序",
       "launchMinimized": "启动时最小化到任务栏",
-      "showInContextMenu": "在“发送到...”文件菜单中显示 LocalSend",
+      "showInContextMenu": "在“发送到...”文件菜单中显示 LocalChat",
       "animations": "动画效果"
     },
     "receive": {
@@ -152,7 +182,7 @@
     },
     "other": {
       "title": "其他",
-      "support": "支持 LocalSend",
+      "support": "支持 LocalChat",
       "donate": "捐赠",
       "privacyPolicy": "隐私政策",
       "termsOfUse": "使用条款"
@@ -180,7 +210,7 @@
   },
   "networkInterfacesPage": {
     "title": "网络接口",
-    "info": "默认情况下，LocalSend 使用所有可用的网络接口。您可以在此处排除不需要的网络接口。您需要重新启动服务器以应用更改。",
+    "info": "默认情况下，LocalChat 使用所有可用的网络接口。您可以在此处排除不需要的网络接口。您需要重新启动服务器以应用更改。",
     "preview": "预览",
     "whitelist": "白名单",
     "blacklist": "黑名单"
@@ -241,7 +271,7 @@
   "receiveOptionsPage": {
     "title": "设置",
     "destination": "@:settingsTab.receive.destination",
-    "appDirectory": "(LocalSend 文件夹)",
+    "appDirectory": "(LocalChat 文件夹)",
     "saveToGallery": "@:settingsTab.receive.saveToGallery",
     "saveToGalleryOff": "由于分享内容中存在文件夹，已自动关闭。"
   },
@@ -293,16 +323,16 @@
     "autoAccept": "自动接受请求",
     "requirePin": "启用 PIN 密码",
     "pinHint": "PIN 为 “{pin}”",
-    "encryptionHint": "LocalSend 使用自签名证书。您需要在浏览器中允许它。",
+    "encryptionHint": "LocalChat 使用自签名证书。您需要在浏览器中允许它。",
     "pendingRequests": "待处理请求：{n}"
   },
   "webReceivePage": {
     "title": "通过链接接收"
   },
   "aboutPage": {
-    "title": "关于 LocalSend",
+    "title": "关于 LocalChat",
     "description": [
-      "LocalSend 是一款免费的开源应用程序，可让您通过本地网络与附近的设备安全地分享文件和信息，而无需互联网连接。",
+      "LocalChat 是一款免费的开源应用程序，可让您通过本地网络与附近的设备安全地分享文件和信息，而无需互联网连接。",
       "本程序可在 Android、iOS、macOS、Windows 和 Linux 上使用。您可以在官方主页找到所有下载选项。"
     ],
     "author": "作者",
@@ -312,7 +342,7 @@
   },
   "donationPage": {
     "title": "捐赠",
-    "info": "LocalSend 免费、开源、无广告。如果您喜欢这款应用程序，可以捐款支持开发。",
+    "info": "LocalChat 免费、开源、无广告。如果您喜欢这款应用程序，可以捐款支持开发。",
     "donate": "捐款 {amount}",
     "thanks": "非常感谢您的支持！",
     "restore": "恢复购买"
@@ -467,7 +497,7 @@
     },
     "localNetworkUnauthorized": {
       "title": "@:dialogs.noPermission.title",
-      "description": "LocalSend 在没有扫描本地网络的权限的情况下无法找到其他设备。请在设置中授予此权限。",
+      "description": "LocalChat 在没有扫描本地网络的权限的情况下无法找到其他设备。请在设置中授予此权限。",
       "gotoSettings": "设置"
     },
     "messageInput": {
@@ -514,7 +544,7 @@
       "title": "发送模式",
       "single": "发送文件给一个接收者。已选择的文件在发送后会取消选择。",
       "multiple": "发送文件给多个接收者。已选择的文件在发送后不会取消选择。",
-      "link": "未安装 LocalSend 的接收者可以在浏览器中打开链接以下载选中的文件。"
+      "link": "未安装 LocalChat 的接收者可以在浏览器中打开链接以下载选中的文件。"
     },
     "zoom": {
       "title": "URL"
@@ -527,7 +557,7 @@
   "tray": {
     "@info": "Apple Guidelines are very strict about the \"close\" wording.",
     "open": "@:general.open",
-    "close": "退出 LocalSend",
+    "close": "退出 LocalChat",
     "closeWindows": "退出"
   },
   "web": {

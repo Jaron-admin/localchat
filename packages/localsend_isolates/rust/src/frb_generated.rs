@@ -44,7 +44,7 @@ flutter_rust_bridge::frb_generated_boilerplate!(
     default_rust_auto_opaque = RustAutoOpaqueMoi,
 );
 pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_VERSION: &str = "2.12.0";
-pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_CONTENT_HASH: i32 = -1979579466;
+pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_CONTENT_HASH: i32 = -1870377624;
 
 // Section: executor
 
@@ -1006,6 +1006,260 @@ fn wire__crate__api__http__RsHttpClient_cancel_impl(
         },
     )
 }
+fn wire__crate__api__http__RsHttpClient_chat_capabilities_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_async::<flutter_rust_bridge::for_generated::SseCodec, _, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "RsHttpClient_chat_capabilities",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_that = <RustOpaqueMoi<
+                flutter_rust_bridge::for_generated::RustAutoOpaqueInner<RsHttpClient>,
+            >>::sse_decode(&mut deserializer);
+            let api_ip = <String>::sse_decode(&mut deserializer);
+            let api_port = <u16>::sse_decode(&mut deserializer);
+            deserializer.end();
+            move |context| async move {
+                transform_result_sse::<_, crate::api::http::RsHttpClientError>(
+                    (move || async move {
+                        let mut api_that_guard = None;
+                        let decode_indices_ =
+                            flutter_rust_bridge::for_generated::lockable_compute_decode_order(
+                                vec![flutter_rust_bridge::for_generated::LockableOrderInfo::new(
+                                    &api_that, 0, false,
+                                )],
+                            );
+                        for i in decode_indices_ {
+                            match i {
+                                0 => {
+                                    api_that_guard =
+                                        Some(api_that.lockable_decode_async_ref().await)
+                                }
+                                _ => unreachable!(),
+                            }
+                        }
+                        let api_that_guard = api_that_guard.unwrap();
+                        let output_ok = crate::api::http::RsHttpClient::chat_capabilities(
+                            &*api_that_guard,
+                            &api_ip,
+                            api_port,
+                        )
+                        .await?;
+                        Ok(output_ok)
+                    })()
+                    .await,
+                )
+            }
+        },
+    )
+}
+fn wire__crate__api__http__RsHttpClient_chat_deliver_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_async::<flutter_rust_bridge::for_generated::SseCodec, _, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "RsHttpClient_chat_deliver",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_that = <RustOpaqueMoi<
+                flutter_rust_bridge::for_generated::RustAutoOpaqueInner<RsHttpClient>,
+            >>::sse_decode(&mut deserializer);
+            let api_ip = <String>::sse_decode(&mut deserializer);
+            let api_port = <u16>::sse_decode(&mut deserializer);
+            let api_payload = <crate::api::model::ChatMessageDto>::sse_decode(&mut deserializer);
+            deserializer.end();
+            move |context| async move {
+                transform_result_sse::<_, crate::api::http::RsHttpClientError>(
+                    (move || async move {
+                        let mut api_that_guard = None;
+                        let decode_indices_ =
+                            flutter_rust_bridge::for_generated::lockable_compute_decode_order(
+                                vec![flutter_rust_bridge::for_generated::LockableOrderInfo::new(
+                                    &api_that, 0, false,
+                                )],
+                            );
+                        for i in decode_indices_ {
+                            match i {
+                                0 => {
+                                    api_that_guard =
+                                        Some(api_that.lockable_decode_async_ref().await)
+                                }
+                                _ => unreachable!(),
+                            }
+                        }
+                        let api_that_guard = api_that_guard.unwrap();
+                        let output_ok = crate::api::http::RsHttpClient::chat_deliver(
+                            &*api_that_guard,
+                            &api_ip,
+                            api_port,
+                            api_payload,
+                        )
+                        .await?;
+                        Ok(output_ok)
+                    })()
+                    .await,
+                )
+            }
+        },
+    )
+}
+fn wire__crate__api__http__RsHttpClient_chat_invite_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_async::<flutter_rust_bridge::for_generated::SseCodec, _, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "RsHttpClient_chat_invite",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_that = <RustOpaqueMoi<
+                flutter_rust_bridge::for_generated::RustAutoOpaqueInner<RsHttpClient>,
+            >>::sse_decode(&mut deserializer);
+            let api_ip = <String>::sse_decode(&mut deserializer);
+            let api_port = <u16>::sse_decode(&mut deserializer);
+            let api_payload = <crate::api::model::ChatInvite>::sse_decode(&mut deserializer);
+            deserializer.end();
+            move |context| async move {
+                transform_result_sse::<_, crate::api::http::RsHttpClientError>(
+                    (move || async move {
+                        let mut api_that_guard = None;
+                        let decode_indices_ =
+                            flutter_rust_bridge::for_generated::lockable_compute_decode_order(
+                                vec![flutter_rust_bridge::for_generated::LockableOrderInfo::new(
+                                    &api_that, 0, false,
+                                )],
+                            );
+                        for i in decode_indices_ {
+                            match i {
+                                0 => {
+                                    api_that_guard =
+                                        Some(api_that.lockable_decode_async_ref().await)
+                                }
+                                _ => unreachable!(),
+                            }
+                        }
+                        let api_that_guard = api_that_guard.unwrap();
+                        let output_ok = crate::api::http::RsHttpClient::chat_invite(
+                            &*api_that_guard,
+                            &api_ip,
+                            api_port,
+                            api_payload,
+                        )
+                        .await?;
+                        Ok(output_ok)
+                    })()
+                    .await,
+                )
+            }
+        },
+    )
+}
+fn wire__crate__api__http__RsHttpClient_chat_invite_status_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_async::<flutter_rust_bridge::for_generated::SseCodec, _, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "RsHttpClient_chat_invite_status",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_that = <RustOpaqueMoi<
+                flutter_rust_bridge::for_generated::RustAutoOpaqueInner<RsHttpClient>,
+            >>::sse_decode(&mut deserializer);
+            let api_ip = <String>::sse_decode(&mut deserializer);
+            let api_port = <u16>::sse_decode(&mut deserializer);
+            let api_invitation_id = <String>::sse_decode(&mut deserializer);
+            deserializer.end();
+            move |context| async move {
+                transform_result_sse::<_, crate::api::http::RsHttpClientError>(
+                    (move || async move {
+                        let mut api_that_guard = None;
+                        let decode_indices_ =
+                            flutter_rust_bridge::for_generated::lockable_compute_decode_order(
+                                vec![flutter_rust_bridge::for_generated::LockableOrderInfo::new(
+                                    &api_that, 0, false,
+                                )],
+                            );
+                        for i in decode_indices_ {
+                            match i {
+                                0 => {
+                                    api_that_guard =
+                                        Some(api_that.lockable_decode_async_ref().await)
+                                }
+                                _ => unreachable!(),
+                            }
+                        }
+                        let api_that_guard = api_that_guard.unwrap();
+                        let output_ok = crate::api::http::RsHttpClient::chat_invite_status(
+                            &*api_that_guard,
+                            &api_ip,
+                            api_port,
+                            &api_invitation_id,
+                        )
+                        .await?;
+                        Ok(output_ok)
+                    })()
+                    .await,
+                )
+            }
+        },
+    )
+}
 fn wire__crate__api__http__RsHttpClient_prepare_upload_impl(
     port_: flutter_rust_bridge::for_generated::MessagePort,
     ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
@@ -1516,6 +1770,119 @@ fn wire__crate__api__server__RsHttpServer_listen_impl(
         },
     )
 }
+fn wire__crate__api__server__RsHttpServer_port_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_normal::<flutter_rust_bridge::for_generated::SseCodec, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "RsHttpServer_port",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_that = <RustOpaqueMoi<
+                flutter_rust_bridge::for_generated::RustAutoOpaqueInner<RsHttpServer>,
+            >>::sse_decode(&mut deserializer);
+            deserializer.end();
+            move |context| {
+                transform_result_sse::<_, ()>((move || {
+                    let mut api_that_guard = None;
+                    let decode_indices_ =
+                        flutter_rust_bridge::for_generated::lockable_compute_decode_order(vec![
+                            flutter_rust_bridge::for_generated::LockableOrderInfo::new(
+                                &api_that, 0, false,
+                            ),
+                        ]);
+                    for i in decode_indices_ {
+                        match i {
+                            0 => api_that_guard = Some(api_that.lockable_decode_sync_ref()),
+                            _ => unreachable!(),
+                        }
+                    }
+                    let api_that_guard = api_that_guard.unwrap();
+                    let output_ok = Result::<_, ()>::Ok(crate::api::server::RsHttpServer::port(
+                        &*api_that_guard,
+                    ))?;
+                    Ok(output_ok)
+                })())
+            }
+        },
+    )
+}
+fn wire__crate__api__server__RsHttpServer_respond_chat_request_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_async::<flutter_rust_bridge::for_generated::SseCodec, _, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "RsHttpServer_respond_chat_request",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_that = <RustOpaqueMoi<
+                flutter_rust_bridge::for_generated::RustAutoOpaqueInner<RsHttpServer>,
+            >>::sse_decode(&mut deserializer);
+            let api_request_id = <String>::sse_decode(&mut deserializer);
+            let api_reply = <crate::api::model::ChatReply>::sse_decode(&mut deserializer);
+            deserializer.end();
+            move |context| async move {
+                transform_result_sse::<_, flutter_rust_bridge::for_generated::anyhow::Error>(
+                    (move || async move {
+                        let mut api_that_guard = None;
+                        let decode_indices_ =
+                            flutter_rust_bridge::for_generated::lockable_compute_decode_order(
+                                vec![flutter_rust_bridge::for_generated::LockableOrderInfo::new(
+                                    &api_that, 0, false,
+                                )],
+                            );
+                        for i in decode_indices_ {
+                            match i {
+                                0 => {
+                                    api_that_guard =
+                                        Some(api_that.lockable_decode_async_ref().await)
+                                }
+                                _ => unreachable!(),
+                            }
+                        }
+                        let api_that_guard = api_that_guard.unwrap();
+                        let output_ok = crate::api::server::RsHttpServer::respond_chat_request(
+                            &*api_that_guard,
+                            api_request_id,
+                            api_reply,
+                        )
+                        .await?;
+                        Ok(output_ok)
+                    })()
+                    .await,
+                )
+            }
+        },
+    )
+}
 fn wire__crate__api__server__RsHttpServer_respond_file_download_impl(
     port_: flutter_rust_bridge::for_generated::MessagePort,
     ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
@@ -1744,6 +2111,7 @@ fn wire__crate__api__server__RsHttpServer_respond_prepare_upload_impl(
             let api_that = <RustOpaqueMoi<
                 flutter_rust_bridge::for_generated::RustAutoOpaqueInner<RsHttpServer>,
             >>::sse_decode(&mut deserializer);
+            let api_session_id = <String>::sse_decode(&mut deserializer);
             let api_accepted_file_ids = <Option<Vec<String>>>::sse_decode(&mut deserializer);
             deserializer.end();
             move |context| async move {
@@ -1768,6 +2136,7 @@ fn wire__crate__api__server__RsHttpServer_respond_prepare_upload_impl(
                         let api_that_guard = api_that_guard.unwrap();
                         let output_ok = crate::api::server::RsHttpServer::respond_prepare_upload(
                             &*api_that_guard,
+                            api_session_id,
                             api_accepted_file_ids,
                         )
                         .await?;
@@ -3228,7 +3597,8 @@ fn wire__crate__api__discovery__start_discovery_impl(
             let mut deserializer =
                 flutter_rust_bridge::for_generated::SseDeserializer::new(message);
             let api_group = <String>::sse_decode(&mut deserializer);
-            let api_port = <u16>::sse_decode(&mut deserializer);
+            let api_multicast_port = <u16>::sse_decode(&mut deserializer);
+            let api_http_port = <u16>::sse_decode(&mut deserializer);
             let api_network_whitelist = <Option<Vec<String>>>::sse_decode(&mut deserializer);
             let api_network_blacklist = <Option<Vec<String>>>::sse_decode(&mut deserializer);
             let api_alias = <String>::sse_decode(&mut deserializer);
@@ -3248,7 +3618,8 @@ fn wire__crate__api__discovery__start_discovery_impl(
                     (move || async move {
                         let output_ok = crate::api::discovery::start_discovery(
                             api_group,
-                            api_port,
+                            api_multicast_port,
+                            api_http_port,
                             api_network_whitelist,
                             api_network_blacklist,
                             api_alias,
@@ -3373,6 +3744,62 @@ fn wire__crate__api__crypto__verify_cert_impl(
 #[allow(clippy::unnecessary_literal_unwrap)]
 const _: fn() = || {
     {
+        let ChatAck = None::<crate::api::model::ChatAck>.unwrap();
+        let _: String = ChatAck.message_id;
+        let _: bool = ChatAck.duplicate;
+    }
+    {
+        let ChatCapabilities = None::<crate::api::model::ChatCapabilities>.unwrap();
+        let _: u32 = ChatCapabilities.version;
+        let _: Vec<String> = ChatCapabilities.features;
+        let _: u32 = ChatCapabilities.max_text_bytes;
+    }
+    {
+        let ChatInvite = None::<crate::api::model::ChatInvite>.unwrap();
+        let _: u32 = ChatInvite.version;
+        let _: String = ChatInvite.invitation_id;
+    }
+    {
+        let ChatInviteStatus = None::<crate::api::model::ChatInviteStatus>.unwrap();
+        let _: String = ChatInviteStatus.invitation_id;
+        let _: crate::api::model::ChatInvitationStatus = ChatInviteStatus.status;
+    }
+    {
+        let ChatMessageDto = None::<crate::api::model::ChatMessageDto>.unwrap();
+        let _: u32 = ChatMessageDto.version;
+        let _: String = ChatMessageDto.message_id;
+        let _: i64 = ChatMessageDto.sent_at_ms;
+        let _: String = ChatMessageDto.text;
+    }
+    match None::<crate::api::model::ChatOperation>.unwrap() {
+        crate::api::model::ChatOperation::Invite(field0) => {
+            let _: crate::api::model::ChatInvite = field0;
+        }
+        crate::api::model::ChatOperation::InviteStatus(field0) => {
+            let _: String = field0;
+        }
+        crate::api::model::ChatOperation::Deliver(field0) => {
+            let _: crate::api::model::ChatMessageDto = field0;
+        }
+    }
+    match None::<crate::api::model::ChatReply>.unwrap() {
+        crate::api::model::ChatReply::Invitation(field0) => {
+            let _: crate::api::model::ChatInviteStatus = field0;
+        }
+        crate::api::model::ChatReply::Stored(field0) => {
+            let _: crate::api::model::ChatAck = field0;
+        }
+        crate::api::model::ChatReply::Rejected(field0) => {
+            let _: crate::api::model::ChatErrorCode = field0;
+        }
+    }
+    {
+        let ChatTransferRef = None::<crate::api::model::ChatTransferRef>.unwrap();
+        let _: String = ChatTransferRef.message_id;
+        let _: String = ChatTransferRef.transfer_id;
+        let _: std::collections::HashMap<String, String> = ChatTransferRef.attachments;
+    }
+    {
         let ClientInfo = None::<crate::api::webrtc::ClientInfo>.unwrap();
         let _: uuid::Uuid = ClientInfo.id;
         let _: String = ClientInfo.alias;
@@ -3414,6 +3841,7 @@ const _: fn() = || {
         let _: crate::api::model::RegisterDto = PrepareUploadRequestDto.info;
         let _: std::collections::HashMap<String, crate::api::model::FileDto> =
             PrepareUploadRequestDto.files;
+        let _: Option<crate::api::model::ChatTransferRef> = PrepareUploadRequestDto.localchat;
     }
     {
         let PrepareUploadResponseDto = None::<crate::api::model::PrepareUploadResponseDto>.unwrap();
@@ -3996,6 +4424,163 @@ impl SseDecode for bool {
     }
 }
 
+impl SseDecode for crate::api::model::ChatAck {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_messageId = <String>::sse_decode(deserializer);
+        let mut var_duplicate = <bool>::sse_decode(deserializer);
+        return crate::api::model::ChatAck {
+            message_id: var_messageId,
+            duplicate: var_duplicate,
+        };
+    }
+}
+
+impl SseDecode for crate::api::model::ChatCapabilities {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_version = <u32>::sse_decode(deserializer);
+        let mut var_features = <Vec<String>>::sse_decode(deserializer);
+        let mut var_maxTextBytes = <u32>::sse_decode(deserializer);
+        return crate::api::model::ChatCapabilities {
+            version: var_version,
+            features: var_features,
+            max_text_bytes: var_maxTextBytes,
+        };
+    }
+}
+
+impl SseDecode for crate::api::model::ChatErrorCode {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut inner = <i32>::sse_decode(deserializer);
+        return match inner {
+            0 => crate::api::model::ChatErrorCode::Denied,
+            1 => crate::api::model::ChatErrorCode::Conflict,
+            2 => crate::api::model::ChatErrorCode::Unavailable,
+            3 => crate::api::model::ChatErrorCode::Overloaded,
+            _ => unreachable!("Invalid variant for ChatErrorCode: {}", inner),
+        };
+    }
+}
+
+impl SseDecode for crate::api::model::ChatInvitationStatus {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut inner = <i32>::sse_decode(deserializer);
+        return match inner {
+            0 => crate::api::model::ChatInvitationStatus::Pending,
+            1 => crate::api::model::ChatInvitationStatus::Accepted,
+            2 => crate::api::model::ChatInvitationStatus::Rejected,
+            _ => unreachable!("Invalid variant for ChatInvitationStatus: {}", inner),
+        };
+    }
+}
+
+impl SseDecode for crate::api::model::ChatInvite {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_version = <u32>::sse_decode(deserializer);
+        let mut var_invitationId = <String>::sse_decode(deserializer);
+        return crate::api::model::ChatInvite {
+            version: var_version,
+            invitation_id: var_invitationId,
+        };
+    }
+}
+
+impl SseDecode for crate::api::model::ChatInviteStatus {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_invitationId = <String>::sse_decode(deserializer);
+        let mut var_status = <crate::api::model::ChatInvitationStatus>::sse_decode(deserializer);
+        return crate::api::model::ChatInviteStatus {
+            invitation_id: var_invitationId,
+            status: var_status,
+        };
+    }
+}
+
+impl SseDecode for crate::api::model::ChatMessageDto {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_version = <u32>::sse_decode(deserializer);
+        let mut var_messageId = <String>::sse_decode(deserializer);
+        let mut var_sentAtMs = <i64>::sse_decode(deserializer);
+        let mut var_text = <String>::sse_decode(deserializer);
+        return crate::api::model::ChatMessageDto {
+            version: var_version,
+            message_id: var_messageId,
+            sent_at_ms: var_sentAtMs,
+            text: var_text,
+        };
+    }
+}
+
+impl SseDecode for crate::api::model::ChatOperation {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut tag_ = <i32>::sse_decode(deserializer);
+        match tag_ {
+            0 => {
+                let mut var_field0 = <crate::api::model::ChatInvite>::sse_decode(deserializer);
+                return crate::api::model::ChatOperation::Invite(var_field0);
+            }
+            1 => {
+                let mut var_field0 = <String>::sse_decode(deserializer);
+                return crate::api::model::ChatOperation::InviteStatus(var_field0);
+            }
+            2 => {
+                let mut var_field0 = <crate::api::model::ChatMessageDto>::sse_decode(deserializer);
+                return crate::api::model::ChatOperation::Deliver(var_field0);
+            }
+            _ => {
+                unimplemented!("");
+            }
+        }
+    }
+}
+
+impl SseDecode for crate::api::model::ChatReply {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut tag_ = <i32>::sse_decode(deserializer);
+        match tag_ {
+            0 => {
+                let mut var_field0 =
+                    <crate::api::model::ChatInviteStatus>::sse_decode(deserializer);
+                return crate::api::model::ChatReply::Invitation(var_field0);
+            }
+            1 => {
+                let mut var_field0 = <crate::api::model::ChatAck>::sse_decode(deserializer);
+                return crate::api::model::ChatReply::Stored(var_field0);
+            }
+            2 => {
+                let mut var_field0 = <crate::api::model::ChatErrorCode>::sse_decode(deserializer);
+                return crate::api::model::ChatReply::Rejected(var_field0);
+            }
+            _ => {
+                unimplemented!("");
+            }
+        }
+    }
+}
+
+impl SseDecode for crate::api::model::ChatTransferRef {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_messageId = <String>::sse_decode(deserializer);
+        let mut var_transferId = <String>::sse_decode(deserializer);
+        let mut var_attachments =
+            <std::collections::HashMap<String, String>>::sse_decode(deserializer);
+        return crate::api::model::ChatTransferRef {
+            message_id: var_messageId,
+            transfer_id: var_transferId,
+            attachments: var_attachments,
+        };
+    }
+}
+
 impl SseDecode for crate::api::webrtc::ClientInfo {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
@@ -4118,6 +4703,13 @@ impl SseDecode for i32 {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
         deserializer.cursor.read_i32::<NativeEndian>().unwrap()
+    }
+}
+
+impl SseDecode for i64 {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        deserializer.cursor.read_i64::<NativeEndian>().unwrap()
     }
 }
 
@@ -4270,6 +4862,19 @@ impl SseDecode for Option<Dart2RustStreamReceiver> {
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
         if (<bool>::sse_decode(deserializer)) {
             return Some(<Dart2RustStreamReceiver>::sse_decode(deserializer));
+        } else {
+            return None;
+        }
+    }
+}
+
+impl SseDecode for Option<crate::api::model::ChatTransferRef> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        if (<bool>::sse_decode(deserializer)) {
+            return Some(<crate::api::model::ChatTransferRef>::sse_decode(
+                deserializer,
+            ));
         } else {
             return None;
         }
@@ -4445,9 +5050,12 @@ impl SseDecode for crate::api::model::PrepareUploadRequestDto {
             <std::collections::HashMap<String, crate::api::model::FileDto>>::sse_decode(
                 deserializer,
             );
+        let mut var_localchat =
+            <Option<crate::api::model::ChatTransferRef>>::sse_decode(deserializer);
         return crate::api::model::PrepareUploadRequestDto {
             info: var_info,
             files: var_files,
+            localchat: var_localchat,
         };
     }
 }
@@ -4728,6 +5336,19 @@ impl SseDecode for crate::api::server::RsServerEvent {
         let mut tag_ = <i32>::sse_decode(deserializer);
         match tag_ {
             0 => {
+                let mut var_requestId = <String>::sse_decode(deserializer);
+                let mut var_ip = <String>::sse_decode(deserializer);
+                let mut var_peerFingerprint = <String>::sse_decode(deserializer);
+                let mut var_operation =
+                    <crate::api::model::ChatOperation>::sse_decode(deserializer);
+                return crate::api::server::RsServerEvent::ChatRequest {
+                    request_id: var_requestId,
+                    ip: var_ip,
+                    peer_fingerprint: var_peerFingerprint,
+                    operation: var_operation,
+                };
+            }
+            1 => {
                 let mut var_ip = <String>::sse_decode(deserializer);
                 let mut var_info = <crate::api::server::RegisterDtoV2>::sse_decode(deserializer);
                 return crate::api::server::RsServerEvent::Register {
@@ -4735,7 +5356,7 @@ impl SseDecode for crate::api::server::RsServerEvent {
                     info: var_info,
                 };
             }
-            1 => {
+            2 => {
                 let mut var_sessionId = <String>::sse_decode(deserializer);
                 let mut var_ip = <String>::sse_decode(deserializer);
                 let mut var_info = <crate::api::server::RegisterDtoV2>::sse_decode(deserializer);
@@ -4744,15 +5365,18 @@ impl SseDecode for crate::api::server::RsServerEvent {
                     <std::collections::HashMap<String, crate::api::model::FileDto>>::sse_decode(
                         deserializer,
                     );
+                let mut var_localchat =
+                    <Option<crate::api::model::ChatTransferRef>>::sse_decode(deserializer);
                 return crate::api::server::RsServerEvent::PrepareUpload {
                     session_id: var_sessionId,
                     ip: var_ip,
                     info: var_info,
                     cert_fingerprint: var_certFingerprint,
                     files: var_files,
+                    localchat: var_localchat,
                 };
             }
-            2 => {
+            3 => {
                 let mut var_sessionId = <String>::sse_decode(deserializer);
                 let mut var_fileId = <String>::sse_decode(deserializer);
                 let mut var_file = <crate::api::model::FileDto>::sse_decode(deserializer);
@@ -4762,7 +5386,7 @@ impl SseDecode for crate::api::server::RsServerEvent {
                     file: var_file,
                 };
             }
-            3 => {
+            4 => {
                 let mut var_sessionId = <String>::sse_decode(deserializer);
                 let mut var_reason =
                     <crate::api::server::SessionEndReasonV2>::sse_decode(deserializer);
@@ -4771,21 +5395,23 @@ impl SseDecode for crate::api::server::RsServerEvent {
                     reason: var_reason,
                 };
             }
-            4 => {
+            5 => {
                 let mut var_sessionId = <String>::sse_decode(deserializer);
                 return crate::api::server::RsServerEvent::PrepareUploadAborted {
                     session_id: var_sessionId,
                 };
             }
-            5 => {
+            6 => {
                 let mut var_ip = <String>::sse_decode(deserializer);
                 let mut var_sessionId = <String>::sse_decode(deserializer);
+                let mut var_certFingerprint = <Option<String>>::sse_decode(deserializer);
                 return crate::api::server::RsServerEvent::CancelReceived {
                     ip: var_ip,
                     session_id: var_sessionId,
+                    cert_fingerprint: var_certFingerprint,
                 };
             }
-            6 => {
+            7 => {
                 let mut var_ip = <String>::sse_decode(deserializer);
                 let mut var_sessionId = <String>::sse_decode(deserializer);
                 let mut var_userAgent = <Option<String>>::sse_decode(deserializer);
@@ -4795,7 +5421,7 @@ impl SseDecode for crate::api::server::RsServerEvent {
                     user_agent: var_userAgent,
                 };
             }
-            7 => {
+            8 => {
                 let mut var_sessionId = <String>::sse_decode(deserializer);
                 let mut var_fileId = <String>::sse_decode(deserializer);
                 let mut var_file = <crate::api::model::FileDto>::sse_decode(deserializer);
@@ -4805,11 +5431,11 @@ impl SseDecode for crate::api::server::RsServerEvent {
                     file: var_file,
                 };
             }
-            8 => {
+            9 => {
                 let mut var_args = <Vec<String>>::sse_decode(deserializer);
                 return crate::api::server::RsServerEvent::Show { args: var_args };
             }
-            9 => {
+            10 => {
                 let mut var_error = <String>::sse_decode(deserializer);
                 return crate::api::server::RsServerEvent::ListenerFailed { error: var_error };
             }
@@ -5225,168 +5851,196 @@ fn pde_ffi_dispatcher_primary_impl(
         ),
         15 => wire__crate__api__discovery__RsDiscovery_stop_impl(port, ptr, rust_vec_len, data_len),
         16 => wire__crate__api__http__RsHttpClient_cancel_impl(port, ptr, rust_vec_len, data_len),
-        17 => wire__crate__api__http__RsHttpClient_prepare_upload_impl(
+        17 => wire__crate__api__http__RsHttpClient_chat_capabilities_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        18 => wire__crate__api__http__RsHttpClient_register_impl(port, ptr, rust_vec_len, data_len),
-        19 => wire__crate__api__http__RsHttpClient_upload_impl(port, ptr, rust_vec_len, data_len),
-        20 => wire__crate__api__server__RsHttpServer_cancel_session_impl(
+        18 => wire__crate__api__http__RsHttpClient_chat_deliver_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        21 => wire__crate__api__server__RsHttpServer_fail_file_download_impl(
+        19 => {
+            wire__crate__api__http__RsHttpClient_chat_invite_impl(port, ptr, rust_vec_len, data_len)
+        }
+        20 => wire__crate__api__http__RsHttpClient_chat_invite_status_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        22 => wire__crate__api__server__RsHttpServer_fail_file_upload_impl(
+        21 => wire__crate__api__http__RsHttpClient_prepare_upload_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        23 => wire__crate__api__server__RsHttpServer_listen_impl(port, ptr, rust_vec_len, data_len),
-        24 => wire__crate__api__server__RsHttpServer_respond_file_download_impl(
+        22 => wire__crate__api__http__RsHttpClient_register_impl(port, ptr, rust_vec_len, data_len),
+        23 => wire__crate__api__http__RsHttpClient_upload_impl(port, ptr, rust_vec_len, data_len),
+        24 => wire__crate__api__server__RsHttpServer_cancel_session_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        25 => wire__crate__api__server__RsHttpServer_respond_file_upload_impl(
+        25 => wire__crate__api__server__RsHttpServer_fail_file_download_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        26 => wire__crate__api__server__RsHttpServer_respond_prepare_download_impl(
+        26 => wire__crate__api__server__RsHttpServer_fail_file_upload_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        27 => wire__crate__api__server__RsHttpServer_respond_prepare_upload_impl(
+        27 => wire__crate__api__server__RsHttpServer_listen_impl(port, ptr, rust_vec_len, data_len),
+        28 => wire__crate__api__server__RsHttpServer_port_impl(port, ptr, rust_vec_len, data_len),
+        29 => wire__crate__api__server__RsHttpServer_respond_chat_request_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        28 => wire__crate__api__server__RsHttpServer_stop_impl(port, ptr, rust_vec_len, data_len),
-        29 => wire__crate__api__webrtc__RtcFileReceiver_get_file_id_impl(
+        30 => wire__crate__api__server__RsHttpServer_respond_file_download_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        30 => wire__crate__api__webrtc__RtcFileReceiver_receive_impl(
+        31 => wire__crate__api__server__RsHttpServer_respond_file_upload_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        31 => wire__crate__api__webrtc__RtcFileSender_send_impl(port, ptr, rust_vec_len, data_len),
-        32 => wire__crate__api__webrtc__RtcReceiveController_decline_impl(
+        32 => wire__crate__api__server__RsHttpServer_respond_prepare_download_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        33 => wire__crate__api__webrtc__RtcReceiveController_listen_error_impl(
+        33 => wire__crate__api__server__RsHttpServer_respond_prepare_upload_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        34 => wire__crate__api__webrtc__RtcReceiveController_listen_files_impl(
+        34 => wire__crate__api__server__RsHttpServer_stop_impl(port, ptr, rust_vec_len, data_len),
+        35 => wire__crate__api__webrtc__RtcFileReceiver_get_file_id_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        35 => wire__crate__api__webrtc__RtcReceiveController_listen_receiving_impl(
+        36 => wire__crate__api__webrtc__RtcFileReceiver_receive_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        36 => wire__crate__api__webrtc__RtcReceiveController_listen_status_impl(
+        37 => wire__crate__api__webrtc__RtcFileSender_send_impl(port, ptr, rust_vec_len, data_len),
+        38 => wire__crate__api__webrtc__RtcReceiveController_decline_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        37 => wire__crate__api__webrtc__RtcReceiveController_send_file_status_impl(
+        39 => wire__crate__api__webrtc__RtcReceiveController_listen_error_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        38 => wire__crate__api__webrtc__RtcReceiveController_send_pin_impl(
+        40 => wire__crate__api__webrtc__RtcReceiveController_listen_files_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        39 => wire__crate__api__webrtc__RtcReceiveController_send_selection_impl(
+        41 => wire__crate__api__webrtc__RtcReceiveController_listen_receiving_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        40 => wire__crate__api__webrtc__RtcSendController_listen_error_impl(
+        42 => wire__crate__api__webrtc__RtcReceiveController_listen_status_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        41 => wire__crate__api__webrtc__RtcSendController_listen_selected_files_impl(
+        43 => wire__crate__api__webrtc__RtcReceiveController_send_file_status_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        42 => wire__crate__api__webrtc__RtcSendController_listen_status_impl(
+        44 => wire__crate__api__webrtc__RtcReceiveController_send_pin_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        43 => wire__crate__api__webrtc__RtcSendController_send_file_impl(
+        45 => wire__crate__api__webrtc__RtcReceiveController_send_selection_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        44 => wire__crate__api__webrtc__RtcSendController_send_pin_impl(
+        46 => wire__crate__api__webrtc__RtcSendController_listen_error_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        45 => wire__crate__api__webrtc__connect_impl(port, ptr, rust_vec_len, data_len),
-        48 => wire__crate__api__stream__create_stream_impl(port, ptr, rust_vec_len, data_len),
-        49 => {
+        47 => wire__crate__api__webrtc__RtcSendController_listen_selected_files_impl(
+            port,
+            ptr,
+            rust_vec_len,
+            data_len,
+        ),
+        48 => wire__crate__api__webrtc__RtcSendController_listen_status_impl(
+            port,
+            ptr,
+            rust_vec_len,
+            data_len,
+        ),
+        49 => wire__crate__api__webrtc__RtcSendController_send_file_impl(
+            port,
+            ptr,
+            rust_vec_len,
+            data_len,
+        ),
+        50 => wire__crate__api__webrtc__RtcSendController_send_pin_impl(
+            port,
+            ptr,
+            rust_vec_len,
+            data_len,
+        ),
+        51 => wire__crate__api__webrtc__connect_impl(port, ptr, rust_vec_len, data_len),
+        54 => wire__crate__api__stream__create_stream_impl(port, ptr, rust_vec_len, data_len),
+        55 => {
             wire__crate__api__logging__enable_debug_logging_impl(port, ptr, rust_vec_len, data_len)
         }
-        50 => wire__crate__api__crypto__generate_key_pair_impl(port, ptr, rust_vec_len, data_len),
-        51 => wire__crate__api__crypto__generate_security_context_impl(
+        56 => wire__crate__api__crypto__generate_key_pair_impl(port, ptr, rust_vec_len, data_len),
+        57 => wire__crate__api__crypto__generate_security_context_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        52 => wire__crate__api__crypto__hash_file_impl(port, ptr, rust_vec_len, data_len),
-        54 => {
+        58 => wire__crate__api__crypto__hash_file_impl(port, ptr, rust_vec_len, data_len),
+        60 => {
             wire__crate__api__metadata__read_file_metadata_impl(port, ptr, rust_vec_len, data_len)
         }
-        56 => wire__crate__api__discovery__start_discovery_impl(port, ptr, rust_vec_len, data_len),
-        57 => wire__crate__api__server__start_server_impl(port, ptr, rust_vec_len, data_len),
-        58 => wire__crate__api__crypto__verify_cert_impl(port, ptr, rust_vec_len, data_len),
+        62 => wire__crate__api__discovery__start_discovery_impl(port, ptr, rust_vec_len, data_len),
+        63 => wire__crate__api__server__start_server_impl(port, ptr, rust_vec_len, data_len),
+        64 => wire__crate__api__crypto__verify_cert_impl(port, ptr, rust_vec_len, data_len),
         _ => unreachable!(),
     }
 }
@@ -5401,10 +6055,10 @@ fn pde_ffi_dispatcher_sync_impl(
     match func_id {
         2 => wire__crate__api__stream__Dart2RustStreamSink_close_impl(ptr, rust_vec_len, data_len),
         6 => wire__crate__api__cancel__RsCancellationToken_cancel_impl(ptr, rust_vec_len, data_len),
-        46 => wire__crate__api__cancel__create_cancellation_token_impl(ptr, rust_vec_len, data_len),
-        47 => wire__crate__api__http__create_client_impl(ptr, rust_vec_len, data_len),
-        53 => wire__crate__api__filename__is_valid_file_name_impl(ptr, rust_vec_len, data_len),
-        55 => wire__crate__api__filename__sanitize_file_name_impl(ptr, rust_vec_len, data_len),
+        52 => wire__crate__api__cancel__create_cancellation_token_impl(ptr, rust_vec_len, data_len),
+        53 => wire__crate__api__http__create_client_impl(ptr, rust_vec_len, data_len),
+        59 => wire__crate__api__filename__is_valid_file_name_impl(ptr, rust_vec_len, data_len),
+        61 => wire__crate__api__filename__sanitize_file_name_impl(ptr, rust_vec_len, data_len),
         _ => unreachable!(),
     }
 }
@@ -5595,6 +6249,241 @@ impl flutter_rust_bridge::IntoIntoDart<FrbWrapper<RsHttpServer>> for RsHttpServe
     }
 }
 
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for FrbWrapper<crate::api::model::ChatAck> {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.0.message_id.into_into_dart().into_dart(),
+            self.0.duplicate.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for FrbWrapper<crate::api::model::ChatAck>
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<FrbWrapper<crate::api::model::ChatAck>>
+    for crate::api::model::ChatAck
+{
+    fn into_into_dart(self) -> FrbWrapper<crate::api::model::ChatAck> {
+        self.into()
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for FrbWrapper<crate::api::model::ChatCapabilities> {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.0.version.into_into_dart().into_dart(),
+            self.0.features.into_into_dart().into_dart(),
+            self.0.max_text_bytes.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for FrbWrapper<crate::api::model::ChatCapabilities>
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<FrbWrapper<crate::api::model::ChatCapabilities>>
+    for crate::api::model::ChatCapabilities
+{
+    fn into_into_dart(self) -> FrbWrapper<crate::api::model::ChatCapabilities> {
+        self.into()
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for FrbWrapper<crate::api::model::ChatErrorCode> {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        match self.0 {
+            crate::api::model::ChatErrorCode::Denied => 0.into_dart(),
+            crate::api::model::ChatErrorCode::Conflict => 1.into_dart(),
+            crate::api::model::ChatErrorCode::Unavailable => 2.into_dart(),
+            crate::api::model::ChatErrorCode::Overloaded => 3.into_dart(),
+            _ => unreachable!(),
+        }
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for FrbWrapper<crate::api::model::ChatErrorCode>
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<FrbWrapper<crate::api::model::ChatErrorCode>>
+    for crate::api::model::ChatErrorCode
+{
+    fn into_into_dart(self) -> FrbWrapper<crate::api::model::ChatErrorCode> {
+        self.into()
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for FrbWrapper<crate::api::model::ChatInvitationStatus> {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        match self.0 {
+            crate::api::model::ChatInvitationStatus::Pending => 0.into_dart(),
+            crate::api::model::ChatInvitationStatus::Accepted => 1.into_dart(),
+            crate::api::model::ChatInvitationStatus::Rejected => 2.into_dart(),
+            _ => unreachable!(),
+        }
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for FrbWrapper<crate::api::model::ChatInvitationStatus>
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<FrbWrapper<crate::api::model::ChatInvitationStatus>>
+    for crate::api::model::ChatInvitationStatus
+{
+    fn into_into_dart(self) -> FrbWrapper<crate::api::model::ChatInvitationStatus> {
+        self.into()
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for FrbWrapper<crate::api::model::ChatInvite> {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.0.version.into_into_dart().into_dart(),
+            self.0.invitation_id.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for FrbWrapper<crate::api::model::ChatInvite>
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<FrbWrapper<crate::api::model::ChatInvite>>
+    for crate::api::model::ChatInvite
+{
+    fn into_into_dart(self) -> FrbWrapper<crate::api::model::ChatInvite> {
+        self.into()
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for FrbWrapper<crate::api::model::ChatInviteStatus> {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.0.invitation_id.into_into_dart().into_dart(),
+            self.0.status.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for FrbWrapper<crate::api::model::ChatInviteStatus>
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<FrbWrapper<crate::api::model::ChatInviteStatus>>
+    for crate::api::model::ChatInviteStatus
+{
+    fn into_into_dart(self) -> FrbWrapper<crate::api::model::ChatInviteStatus> {
+        self.into()
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for FrbWrapper<crate::api::model::ChatMessageDto> {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.0.version.into_into_dart().into_dart(),
+            self.0.message_id.into_into_dart().into_dart(),
+            self.0.sent_at_ms.into_into_dart().into_dart(),
+            self.0.text.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for FrbWrapper<crate::api::model::ChatMessageDto>
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<FrbWrapper<crate::api::model::ChatMessageDto>>
+    for crate::api::model::ChatMessageDto
+{
+    fn into_into_dart(self) -> FrbWrapper<crate::api::model::ChatMessageDto> {
+        self.into()
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for FrbWrapper<crate::api::model::ChatOperation> {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        match self.0 {
+            crate::api::model::ChatOperation::Invite(field0) => {
+                [0.into_dart(), field0.into_into_dart().into_dart()].into_dart()
+            }
+            crate::api::model::ChatOperation::InviteStatus(field0) => {
+                [1.into_dart(), field0.into_into_dart().into_dart()].into_dart()
+            }
+            crate::api::model::ChatOperation::Deliver(field0) => {
+                [2.into_dart(), field0.into_into_dart().into_dart()].into_dart()
+            }
+            _ => {
+                unimplemented!("");
+            }
+        }
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for FrbWrapper<crate::api::model::ChatOperation>
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<FrbWrapper<crate::api::model::ChatOperation>>
+    for crate::api::model::ChatOperation
+{
+    fn into_into_dart(self) -> FrbWrapper<crate::api::model::ChatOperation> {
+        self.into()
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for FrbWrapper<crate::api::model::ChatReply> {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        match self.0 {
+            crate::api::model::ChatReply::Invitation(field0) => {
+                [0.into_dart(), field0.into_into_dart().into_dart()].into_dart()
+            }
+            crate::api::model::ChatReply::Stored(field0) => {
+                [1.into_dart(), field0.into_into_dart().into_dart()].into_dart()
+            }
+            crate::api::model::ChatReply::Rejected(field0) => {
+                [2.into_dart(), field0.into_into_dart().into_dart()].into_dart()
+            }
+            _ => {
+                unimplemented!("");
+            }
+        }
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for FrbWrapper<crate::api::model::ChatReply>
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<FrbWrapper<crate::api::model::ChatReply>>
+    for crate::api::model::ChatReply
+{
+    fn into_into_dart(self) -> FrbWrapper<crate::api::model::ChatReply> {
+        self.into()
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for FrbWrapper<crate::api::model::ChatTransferRef> {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.0.message_id.into_into_dart().into_dart(),
+            self.0.transfer_id.into_into_dart().into_dart(),
+            self.0.attachments.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for FrbWrapper<crate::api::model::ChatTransferRef>
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<FrbWrapper<crate::api::model::ChatTransferRef>>
+    for crate::api::model::ChatTransferRef
+{
+    fn into_into_dart(self) -> FrbWrapper<crate::api::model::ChatTransferRef> {
+        self.into()
+    }
+}
 // Codec=Dco (DartCObject based), see doc to use other codecs
 impl flutter_rust_bridge::IntoDart for FrbWrapper<crate::api::webrtc::ClientInfo> {
     fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
@@ -5823,6 +6712,7 @@ impl flutter_rust_bridge::IntoDart for FrbWrapper<crate::api::model::PrepareUplo
         [
             self.0.info.into_into_dart().into_dart(),
             self.0.files.into_into_dart().into_dart(),
+            self.0.localchat.into_into_dart().into_dart(),
         ]
         .into_dart()
     }
@@ -6166,8 +7056,21 @@ impl flutter_rust_bridge::IntoIntoDart<crate::api::http::RsHttpClientError>
 impl flutter_rust_bridge::IntoDart for crate::api::server::RsServerEvent {
     fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
         match self {
-            crate::api::server::RsServerEvent::Register { ip, info } => [
+            crate::api::server::RsServerEvent::ChatRequest {
+                request_id,
+                ip,
+                peer_fingerprint,
+                operation,
+            } => [
                 0.into_dart(),
+                request_id.into_into_dart().into_dart(),
+                ip.into_into_dart().into_dart(),
+                peer_fingerprint.into_into_dart().into_dart(),
+                operation.into_into_dart().into_dart(),
+            ]
+            .into_dart(),
+            crate::api::server::RsServerEvent::Register { ip, info } => [
+                1.into_dart(),
                 ip.into_into_dart().into_dart(),
                 info.into_into_dart().into_dart(),
             ]
@@ -6178,13 +7081,15 @@ impl flutter_rust_bridge::IntoDart for crate::api::server::RsServerEvent {
                 info,
                 cert_fingerprint,
                 files,
+                localchat,
             } => [
-                1.into_dart(),
+                2.into_dart(),
                 session_id.into_into_dart().into_dart(),
                 ip.into_into_dart().into_dart(),
                 info.into_into_dart().into_dart(),
                 cert_fingerprint.into_into_dart().into_dart(),
                 files.into_into_dart().into_dart(),
+                localchat.into_into_dart().into_dart(),
             ]
             .into_dart(),
             crate::api::server::RsServerEvent::FileUpload {
@@ -6192,25 +7097,30 @@ impl flutter_rust_bridge::IntoDart for crate::api::server::RsServerEvent {
                 file_id,
                 file,
             } => [
-                2.into_dart(),
+                3.into_dart(),
                 session_id.into_into_dart().into_dart(),
                 file_id.into_into_dart().into_dart(),
                 file.into_into_dart().into_dart(),
             ]
             .into_dart(),
             crate::api::server::RsServerEvent::SessionEnd { session_id, reason } => [
-                3.into_dart(),
+                4.into_dart(),
                 session_id.into_into_dart().into_dart(),
                 reason.into_into_dart().into_dart(),
             ]
             .into_dart(),
             crate::api::server::RsServerEvent::PrepareUploadAborted { session_id } => {
-                [4.into_dart(), session_id.into_into_dart().into_dart()].into_dart()
+                [5.into_dart(), session_id.into_into_dart().into_dart()].into_dart()
             }
-            crate::api::server::RsServerEvent::CancelReceived { ip, session_id } => [
-                5.into_dart(),
+            crate::api::server::RsServerEvent::CancelReceived {
+                ip,
+                session_id,
+                cert_fingerprint,
+            } => [
+                6.into_dart(),
                 ip.into_into_dart().into_dart(),
                 session_id.into_into_dart().into_dart(),
+                cert_fingerprint.into_into_dart().into_dart(),
             ]
             .into_dart(),
             crate::api::server::RsServerEvent::WebPrepareDownload {
@@ -6218,7 +7128,7 @@ impl flutter_rust_bridge::IntoDart for crate::api::server::RsServerEvent {
                 session_id,
                 user_agent,
             } => [
-                6.into_dart(),
+                7.into_dart(),
                 ip.into_into_dart().into_dart(),
                 session_id.into_into_dart().into_dart(),
                 user_agent.into_into_dart().into_dart(),
@@ -6229,17 +7139,17 @@ impl flutter_rust_bridge::IntoDart for crate::api::server::RsServerEvent {
                 file_id,
                 file,
             } => [
-                7.into_dart(),
+                8.into_dart(),
                 session_id.into_into_dart().into_dart(),
                 file_id.into_into_dart().into_dart(),
                 file.into_into_dart().into_dart(),
             ]
             .into_dart(),
             crate::api::server::RsServerEvent::Show { args } => {
-                [8.into_dart(), args.into_into_dart().into_dart()].into_dart()
+                [9.into_dart(), args.into_into_dart().into_dart()].into_dart()
             }
             crate::api::server::RsServerEvent::ListenerFailed { error } => {
-                [9.into_dart(), error.into_into_dart().into_dart()].into_dart()
+                [10.into_dart(), error.into_into_dart().into_dart()].into_dart()
             }
             _ => {
                 unimplemented!("");
@@ -6980,6 +7890,139 @@ impl SseEncode for bool {
     }
 }
 
+impl SseEncode for crate::api::model::ChatAck {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <String>::sse_encode(self.message_id, serializer);
+        <bool>::sse_encode(self.duplicate, serializer);
+    }
+}
+
+impl SseEncode for crate::api::model::ChatCapabilities {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <u32>::sse_encode(self.version, serializer);
+        <Vec<String>>::sse_encode(self.features, serializer);
+        <u32>::sse_encode(self.max_text_bytes, serializer);
+    }
+}
+
+impl SseEncode for crate::api::model::ChatErrorCode {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <i32>::sse_encode(
+            match self {
+                crate::api::model::ChatErrorCode::Denied => 0,
+                crate::api::model::ChatErrorCode::Conflict => 1,
+                crate::api::model::ChatErrorCode::Unavailable => 2,
+                crate::api::model::ChatErrorCode::Overloaded => 3,
+                _ => {
+                    unimplemented!("");
+                }
+            },
+            serializer,
+        );
+    }
+}
+
+impl SseEncode for crate::api::model::ChatInvitationStatus {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <i32>::sse_encode(
+            match self {
+                crate::api::model::ChatInvitationStatus::Pending => 0,
+                crate::api::model::ChatInvitationStatus::Accepted => 1,
+                crate::api::model::ChatInvitationStatus::Rejected => 2,
+                _ => {
+                    unimplemented!("");
+                }
+            },
+            serializer,
+        );
+    }
+}
+
+impl SseEncode for crate::api::model::ChatInvite {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <u32>::sse_encode(self.version, serializer);
+        <String>::sse_encode(self.invitation_id, serializer);
+    }
+}
+
+impl SseEncode for crate::api::model::ChatInviteStatus {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <String>::sse_encode(self.invitation_id, serializer);
+        <crate::api::model::ChatInvitationStatus>::sse_encode(self.status, serializer);
+    }
+}
+
+impl SseEncode for crate::api::model::ChatMessageDto {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <u32>::sse_encode(self.version, serializer);
+        <String>::sse_encode(self.message_id, serializer);
+        <i64>::sse_encode(self.sent_at_ms, serializer);
+        <String>::sse_encode(self.text, serializer);
+    }
+}
+
+impl SseEncode for crate::api::model::ChatOperation {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        match self {
+            crate::api::model::ChatOperation::Invite(field0) => {
+                <i32>::sse_encode(0, serializer);
+                <crate::api::model::ChatInvite>::sse_encode(field0, serializer);
+            }
+            crate::api::model::ChatOperation::InviteStatus(field0) => {
+                <i32>::sse_encode(1, serializer);
+                <String>::sse_encode(field0, serializer);
+            }
+            crate::api::model::ChatOperation::Deliver(field0) => {
+                <i32>::sse_encode(2, serializer);
+                <crate::api::model::ChatMessageDto>::sse_encode(field0, serializer);
+            }
+            _ => {
+                unimplemented!("");
+            }
+        }
+    }
+}
+
+impl SseEncode for crate::api::model::ChatReply {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        match self {
+            crate::api::model::ChatReply::Invitation(field0) => {
+                <i32>::sse_encode(0, serializer);
+                <crate::api::model::ChatInviteStatus>::sse_encode(field0, serializer);
+            }
+            crate::api::model::ChatReply::Stored(field0) => {
+                <i32>::sse_encode(1, serializer);
+                <crate::api::model::ChatAck>::sse_encode(field0, serializer);
+            }
+            crate::api::model::ChatReply::Rejected(field0) => {
+                <i32>::sse_encode(2, serializer);
+                <crate::api::model::ChatErrorCode>::sse_encode(field0, serializer);
+            }
+            _ => {
+                unimplemented!("");
+            }
+        }
+    }
+}
+
+impl SseEncode for crate::api::model::ChatTransferRef {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <String>::sse_encode(self.message_id, serializer);
+        <String>::sse_encode(self.transfer_id, serializer);
+        <std::collections::HashMap<String, String>>::sse_encode(self.attachments, serializer);
+    }
+}
+
 impl SseEncode for crate::api::webrtc::ClientInfo {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
@@ -7078,6 +8121,13 @@ impl SseEncode for i32 {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
         serializer.cursor.write_i32::<NativeEndian>(self).unwrap();
+    }
+}
+
+impl SseEncode for i64 {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        serializer.cursor.write_i64::<NativeEndian>(self).unwrap();
     }
 }
 
@@ -7211,6 +8261,16 @@ impl SseEncode for Option<Dart2RustStreamReceiver> {
         <bool>::sse_encode(self.is_some(), serializer);
         if let Some(value) = self {
             <Dart2RustStreamReceiver>::sse_encode(value, serializer);
+        }
+    }
+}
+
+impl SseEncode for Option<crate::api::model::ChatTransferRef> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <bool>::sse_encode(self.is_some(), serializer);
+        if let Some(value) = self {
+            <crate::api::model::ChatTransferRef>::sse_encode(value, serializer);
         }
     }
 }
@@ -7360,6 +8420,7 @@ impl SseEncode for crate::api::model::PrepareUploadRequestDto {
         <std::collections::HashMap<String, crate::api::model::FileDto>>::sse_encode(
             self.files, serializer,
         );
+        <Option<crate::api::model::ChatTransferRef>>::sse_encode(self.localchat, serializer);
     }
 }
 
@@ -7568,8 +8629,20 @@ impl SseEncode for crate::api::server::RsServerEvent {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
         match self {
-            crate::api::server::RsServerEvent::Register { ip, info } => {
+            crate::api::server::RsServerEvent::ChatRequest {
+                request_id,
+                ip,
+                peer_fingerprint,
+                operation,
+            } => {
                 <i32>::sse_encode(0, serializer);
+                <String>::sse_encode(request_id, serializer);
+                <String>::sse_encode(ip, serializer);
+                <String>::sse_encode(peer_fingerprint, serializer);
+                <crate::api::model::ChatOperation>::sse_encode(operation, serializer);
+            }
+            crate::api::server::RsServerEvent::Register { ip, info } => {
+                <i32>::sse_encode(1, serializer);
                 <String>::sse_encode(ip, serializer);
                 <crate::api::server::RegisterDtoV2>::sse_encode(info, serializer);
             }
@@ -7579,8 +8652,9 @@ impl SseEncode for crate::api::server::RsServerEvent {
                 info,
                 cert_fingerprint,
                 files,
+                localchat,
             } => {
-                <i32>::sse_encode(1, serializer);
+                <i32>::sse_encode(2, serializer);
                 <String>::sse_encode(session_id, serializer);
                 <String>::sse_encode(ip, serializer);
                 <crate::api::server::RegisterDtoV2>::sse_encode(info, serializer);
@@ -7588,37 +8662,43 @@ impl SseEncode for crate::api::server::RsServerEvent {
                 <std::collections::HashMap<String, crate::api::model::FileDto>>::sse_encode(
                     files, serializer,
                 );
+                <Option<crate::api::model::ChatTransferRef>>::sse_encode(localchat, serializer);
             }
             crate::api::server::RsServerEvent::FileUpload {
                 session_id,
                 file_id,
                 file,
             } => {
-                <i32>::sse_encode(2, serializer);
+                <i32>::sse_encode(3, serializer);
                 <String>::sse_encode(session_id, serializer);
                 <String>::sse_encode(file_id, serializer);
                 <crate::api::model::FileDto>::sse_encode(file, serializer);
             }
             crate::api::server::RsServerEvent::SessionEnd { session_id, reason } => {
-                <i32>::sse_encode(3, serializer);
+                <i32>::sse_encode(4, serializer);
                 <String>::sse_encode(session_id, serializer);
                 <crate::api::server::SessionEndReasonV2>::sse_encode(reason, serializer);
             }
             crate::api::server::RsServerEvent::PrepareUploadAborted { session_id } => {
-                <i32>::sse_encode(4, serializer);
+                <i32>::sse_encode(5, serializer);
                 <String>::sse_encode(session_id, serializer);
             }
-            crate::api::server::RsServerEvent::CancelReceived { ip, session_id } => {
-                <i32>::sse_encode(5, serializer);
+            crate::api::server::RsServerEvent::CancelReceived {
+                ip,
+                session_id,
+                cert_fingerprint,
+            } => {
+                <i32>::sse_encode(6, serializer);
                 <String>::sse_encode(ip, serializer);
                 <String>::sse_encode(session_id, serializer);
+                <Option<String>>::sse_encode(cert_fingerprint, serializer);
             }
             crate::api::server::RsServerEvent::WebPrepareDownload {
                 ip,
                 session_id,
                 user_agent,
             } => {
-                <i32>::sse_encode(6, serializer);
+                <i32>::sse_encode(7, serializer);
                 <String>::sse_encode(ip, serializer);
                 <String>::sse_encode(session_id, serializer);
                 <Option<String>>::sse_encode(user_agent, serializer);
@@ -7628,17 +8708,17 @@ impl SseEncode for crate::api::server::RsServerEvent {
                 file_id,
                 file,
             } => {
-                <i32>::sse_encode(7, serializer);
+                <i32>::sse_encode(8, serializer);
                 <String>::sse_encode(session_id, serializer);
                 <String>::sse_encode(file_id, serializer);
                 <crate::api::model::FileDto>::sse_encode(file, serializer);
             }
             crate::api::server::RsServerEvent::Show { args } => {
-                <i32>::sse_encode(8, serializer);
+                <i32>::sse_encode(9, serializer);
                 <Vec<String>>::sse_encode(args, serializer);
             }
             crate::api::server::RsServerEvent::ListenerFailed { error } => {
-                <i32>::sse_encode(9, serializer);
+                <i32>::sse_encode(10, serializer);
                 <String>::sse_encode(error, serializer);
             }
             _ => {

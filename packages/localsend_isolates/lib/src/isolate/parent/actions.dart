@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:localsend_isolates/model/device.dart';
+import 'package:localsend_isolates/rust/api/model.dart' show ChatReply;
 import 'package:localsend_isolates/rust/api/server.dart' show WebParams;
 import 'package:localsend_isolates/src/isolate/child/discovery_isolate.dart';
 import 'package:localsend_isolates/src/isolate/child/server_isolate.dart';
@@ -361,17 +362,46 @@ class IsolateHttpServerStopAction extends AsyncReduxAction<IsolateController, Pa
   }
 }
 
+/// Waits for announcement answers to stop before the HTTP endpoint changes.
+class IsolateDiscoveryPauseAction extends AsyncReduxAction<IsolateController, ParentIsolateState> {
+  @override
+  Future<ParentIsolateState> reduce() async {
+    await state.discovery?.sendWrappedTaskAndListenStream(task: DiscoveryPauseTask()).drain<void>();
+    return state;
+  }
+}
+
+class IsolateHttpServerChatResponseAction extends AsyncReduxAction<IsolateController, ParentIsolateState> {
+  final String requestId;
+  final ChatReply reply;
+  IsolateHttpServerChatResponseAction({required this.requestId, required this.reply});
+  @override
+  Future<ParentIsolateState> reduce() async {
+    final connection = state.httpServer;
+    if (connection == null) throw StateError('httpServer is not initialized');
+    await connection
+        .sendWrappedTaskAndListenStream(
+          task: HttpServerChatResponseTask(requestId: requestId, reply: reply),
+        )
+        .drain<void>();
+    return state;
+  }
+}
+
 /// Answers a pending [HttpServerPrepareUploadEvent].
 ///
 /// When accepted, the server isolate receives all files on its own and
 /// reports [HttpServerFileUploadEvent], [HttpServerFileUploadProgressEvent]
 /// and [HttpServerFileUploadResultEvent] on the server event stream.
 class IsolateHttpServerPrepareUploadDecisionAction extends ReduxAction<IsolateController, ParentIsolateState> {
+  final String sessionId;
+
   /// The receive configuration including the accepted file IDs.
   /// `null` declines the request.
   final HttpServerReceiveConfig? config;
 
   IsolateHttpServerPrepareUploadDecisionAction({
+    required this.sessionId,
     required this.config,
   });
 
@@ -387,6 +417,7 @@ class IsolateHttpServerPrepareUploadDecisionAction extends ReduxAction<IsolateCo
         syncState: null,
         data: IsolateTask(
           data: HttpServerPrepareUploadDecisionTask(
+            sessionId: sessionId,
             config: config,
           ),
         ),

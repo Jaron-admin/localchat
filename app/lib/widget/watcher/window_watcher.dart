@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:localsend_app/provider/animation_provider.dart';
+import 'package:localsend_app/provider/chat/chat_runtime_provider.dart';
 import 'package:localsend_app/provider/settings_provider.dart';
 import 'package:localsend_app/provider/window_dimensions_provider.dart';
 import 'package:localsend_app/util/native/platform_check.dart';
@@ -101,6 +102,7 @@ class _WindowWatcherState extends State<WindowWatcher> with WindowListener, Refe
       if (ref.read(settingsProvider).minimizeToTray) {
         await hideToTray();
       } else {
+        await ref.read(chatRuntimeProvider).close();
         await destroyTray();
         exit(0);
       }

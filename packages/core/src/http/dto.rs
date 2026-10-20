@@ -88,6 +88,8 @@ pub struct RegisterResponseDto {
 pub struct PrepareUploadRequestDto {
     pub info: RegisterDto,
     pub files: HashMap<String, FileDto>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub localchat: Option<crate::http::chat_dto::ChatTransferRef>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -102,6 +104,7 @@ impl From<PrepareUploadRequestDto> for PrepareUploadRequestDtoV2 {
         PrepareUploadRequestDtoV2 {
             info: v3.info.into(),
             files: v3.files,
+            localchat: v3.localchat,
         }
     }
 }

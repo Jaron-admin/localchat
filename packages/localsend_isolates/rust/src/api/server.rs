@@ -1,5 +1,7 @@
+use crate::chat_responses::PendingChatRequests;
 use crate::frb_generated::StreamSink;
 use flutter_rust_bridge::frb;
+pub use localsend::http::chat_dto::{ChatOperation, ChatReply, ChatTransferRef};
 pub use localsend::http::dto_v2::RegisterDtoV2;
 use localsend::http::server::ServerConfigV2;
 pub use localsend::http::server::TlsConfig;
@@ -7,8 +9,8 @@ use localsend::http::server::common::save::FileUploadTarget;
 use localsend::http::server::internal::{InternalConfig, InternalEvent};
 pub use localsend::http::server::v2::SessionEndReasonV2;
 use localsend::http::server::v2::{PrepareUploadDecisionV2, ServerEventV2};
-pub use localsend::http::server::web::{WebI18n, WebPages};
 use localsend::http::server::web::{WebConfig, WebSendConfig, WebSendEvent};
+pub use localsend::http::server::web::{WebI18n, WebPages};
 use localsend::http::state::ClientInfo;
 use localsend::model::discovery::DeviceType;
 use localsend::model::discovery::ProtocolType;
@@ -26,6 +28,12 @@ use tokio::sync::{Mutex, mpsc, oneshot};
 /// including the interface scope, which the Rust HTTP client accepts back as
 /// a host.
 pub enum RsServerEvent {
+    ChatRequest {
+        request_id: String,
+        ip: String,
+        peer_fingerprint: String,
+        operation: ChatOperation,
+    },
     /// A device registered itself via `POST /api/localsend/v2/register`.
     ///
     /// On TLS, this event is only emitted when `info.fingerprint` matches the
@@ -45,6 +53,7 @@ pub enum RsServerEvent {
         /// `None` when the server runs without TLS.
         cert_fingerprint: Option<String>,
         files: HashMap<String, FileDto>,
+        localchat: Option<ChatTransferRef>,
     },
 
     /// An accepted file is being uploaded via `POST /api/localsend/v2/upload`.
@@ -70,7 +79,7 @@ pub enum RsServerEvent {
     /// does not manage: the remote device cancels a transfer this application
     /// is currently *sending* to it. The application must verify that [ip]
     /// matches the target of the send session before cancelling it.
-    CancelReceived { ip: String, session_id: String },
+    CancelReceived { ip: String, session_id: String, cert_fingerprint: Option<String> },
 
     /// A web client requests to download the shared files via `POST /api/localsend/v2/prepare-download`.
     ///
@@ -108,6 +117,7 @@ pub enum RsServerEvent {
 }
 
 pub struct RsHttpServer {
+    pending_chat: PendingChatRequests,
     instance: Arc<ServerInstance>,
     event_rx: Mutex<Option<mpsc::Receiver<ServerEventV2>>>,
     pending_decision: Mutex<Option<(String, oneshot::Sender<PrepareUploadDecisionV2>)>>,
@@ -248,7 +258,7 @@ pub async fn start_server(
         None => (None, None),
     };
 
-    let handle = localsend::http::server::start_with_port(
+    let handle = localsend::http::server::start_with_port_fallback(
         port,
         tls,
         ClientInfo {
@@ -276,6 +286,7 @@ pub async fn start_server(
     *running_server = Some(instance.clone());
 
     Ok(RsHttpServer {
+        pending_chat: PendingChatRequests::default(),
         instance,
         event_rx: Mutex::new(Some(event_rx)),
         pending_decision: Mutex::new(None),
@@ -288,6 +299,18 @@ pub async fn start_server(
 }
 
 impl RsHttpServer {
+    pub async fn respond_chat_request(
+        &self,
+        request_id: String,
+        reply: ChatReply,
+    ) -> anyhow::Result<()> {
+        self.pending_chat.respond(&request_id, reply)
+    }
+    /// The actual listening port, including an OS-selected fallback port.
+    pub fn port(&self) -> u16 {
+        self.instance.handle.port()
+    }
+
     /// Emits server events until the server is stopped.
     /// Can only be listened to once.
     ///
@@ -347,6 +370,7 @@ impl RsHttpServer {
                 break;
             }
         }
+        self.pending_chat.clear();
     }
 
     /// Returns whether the sink is still open.
@@ -368,6 +392,7 @@ impl RsHttpServer {
                 info,
                 cert_fingerprint,
                 files,
+                localchat,
                 decision_tx,
             } => {
                 *self.pending_decision.lock().await = Some((session_id.clone(), decision_tx));
@@ -377,6 +402,7 @@ impl RsHttpServer {
                     info,
                     cert_fingerprint,
                     files,
+                    localchat,
                 })
                 .is_ok()
             }
@@ -419,14 +445,33 @@ impl RsHttpServer {
                 sink.add(RsServerEvent::PrepareUploadAborted { session_id })
                     .is_ok()
             }
-            ServerEventV2::CancelReceived { ip, session_id } => sink
+            ServerEventV2::CancelReceived { ip, session_id, cert_fingerprint } => sink
                 .add(RsServerEvent::CancelReceived {
                     ip: ip.to_string(),
                     session_id,
+                    cert_fingerprint,
                 })
                 .is_ok(),
             ServerEventV2::ListenerFailed { error } => {
                 sink.add(RsServerEvent::ListenerFailed { error }).is_ok()
+            }
+            ServerEventV2::ChatRequest {
+                request_id,
+                ip,
+                peer_fingerprint,
+                operation,
+                response_tx,
+            } => {
+                if !self.pending_chat.register(request_id.clone(), response_tx) {
+                    return true;
+                }
+                sink.add(RsServerEvent::ChatRequest {
+                    request_id,
+                    ip: ip.to_string(),
+                    peer_fingerprint,
+                    operation,
+                })
+                .is_ok()
             }
         }
     }
@@ -481,11 +526,10 @@ impl RsHttpServer {
     /// Passing `None` declines the request.
     pub async fn respond_prepare_upload(
         &self,
+        session_id: String,
         accepted_file_ids: Option<Vec<String>>,
     ) -> anyhow::Result<()> {
-        let Some((_, decision_tx)) = self.pending_decision.lock().await.take() else {
-            return Err(anyhow::anyhow!("No pending prepare-upload request"));
-        };
+        let decision_tx = take_prepare_decision(&self.pending_decision, &session_id).await?;
 
         let decision = match accepted_file_ids {
             Some(ids) => PrepareUploadDecisionV2::Accept(ids.into_iter().collect()),
@@ -675,6 +719,7 @@ impl RsHttpServer {
     /// Returns after the listeners are closed, so the port can be bound again.
     pub async fn stop(&self) {
         self.instance.stop().await;
+        self.pending_chat.clear();
 
         let mut running_server = RUNNING_SERVER.lock().await;
         if running_server
@@ -775,6 +820,30 @@ pub struct _WebPages {
     pub download_html: Option<String>,
     pub upload_html: Option<String>,
     pub error_403_html: Option<String>,
+}
+
+type PendingPrepare = Mutex<Option<(String, oneshot::Sender<PrepareUploadDecisionV2>)>>;
+
+async fn take_prepare_decision(pending: &PendingPrepare, session_id: &str) -> anyhow::Result<oneshot::Sender<PrepareUploadDecisionV2>> {
+    let mut slot = pending.lock().await;
+    if slot.as_ref().is_none_or(|(id, tx)| id != session_id || tx.is_closed()) {
+        return Err(anyhow::anyhow!("Prepare-upload request is no longer pending"));
+    }
+    Ok(slot.take().unwrap().1)
+}
+
+#[cfg(test)]
+mod prepare_decision_tests {
+    use super::*;
+    #[tokio::test]
+    async fn stale_ui_decision_cannot_take_a_newer_pending_request() {
+        let (tx, mut rx) = oneshot::channel();
+        let pending = Mutex::new(Some(("new-session".into(), tx)));
+        assert!(take_prepare_decision(&pending, "old-session").await.is_err());
+        assert!(matches!(rx.try_recv(), Err(oneshot::error::TryRecvError::Empty)));
+        take_prepare_decision(&pending, "new-session").await.unwrap().send(PrepareUploadDecisionV2::Decline).unwrap();
+        assert!(matches!(rx.await.unwrap(), PrepareUploadDecisionV2::Decline));
+    }
 }
 
 #[frb(mirror(TlsConfig))]

@@ -15,18 +15,12 @@ SET DART=%FLUTTER_ROOT%\bin\cache\dart-sdk\bin\dart
 
 set BUILD_TOOL_PKG_DIR_POSIX=%BUILD_TOOL_PKG_DIR:\=/%
 
-(
-    echo name: build_tool_runner
-    echo version: 1.0.0
-    echo publish_to: none
-    echo.
-    echo environment:
-    echo   sdk: '^>=3.0.0 ^<4.0.0'
-    echo.
-    echo dependencies:
-    echo   build_tool:
-    echo     path: %BUILD_TOOL_PKG_DIR_POSIX%
-) >pubspec.yaml
+REM CMD redirection uses the console code page. Pub requires UTF-8, including
+REM non-ASCII checkout paths, so write this manifest with an explicit encoding.
+powershell -NoProfile -Command "$lines = @('name: build_tool_runner', 'version: 1.0.0', 'publish_to: none', '', 'environment:', '  sdk: ''>=3.0.0 <4.0.0''', '', 'dependencies:', '  build_tool:', ('    path: ' + $env:BUILD_TOOL_PKG_DIR_POSIX)); [IO.File]::WriteAllLines((Join-Path $pwd 'pubspec.yaml'), $lines, [Text.UTF8Encoding]::new($false))"
+if errorlevel 1 exit /b 1
+
+if not exist .dart_tool mkdir .dart_tool
 
 if not exist bin (
     mkdir bin
@@ -78,7 +72,9 @@ REM which means  we need to do pub get and precompile
 if not exist "%PRECOMPILED%" (
     echo Running pub get in "%cd%"
     "%DART%" pub get --no-precompile
+    if errorlevel 1 exit /b 1
     "%DART%" compile kernel bin/build_tool_runner.dart
+    if errorlevel 1 exit /b 1
 )
 
 "%DART%" "%PRECOMPILED%" %*
@@ -86,6 +82,8 @@ if not exist "%PRECOMPILED%" (
 REM 253 means invalid snapshot version.
 If %ERRORLEVEL% equ 253 (
     "%DART%" pub get --no-precompile
+    if errorlevel 1 exit /b 1
     "%DART%" compile kernel bin/build_tool_runner.dart
+    if errorlevel 1 exit /b 1
     "%DART%" "%PRECOMPILED%" %*
 )

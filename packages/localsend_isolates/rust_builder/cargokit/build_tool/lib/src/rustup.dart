@@ -64,12 +64,14 @@ class Rustup {
 
     final res = runCommand("rustup", ['toolchain', 'list']);
 
-    // To list all non-custom toolchains, we need to filter out lines that
-    // don't start with "stable", "beta", or "nightly".
-    Pattern nonCustom = RegExp(r"^(stable|beta|nightly)");
+    // Rustup also installs numbered releases named by rust-toolchain.toml.
+    // Excluding them makes every build try to reinstall the pinned compiler.
+    Pattern nonCustom =
+        RegExp(r"^(stable|beta|nightly|[0-9]+\.[0-9]+\.[0-9]+)(-|\s|$)");
     final lines = res.stdout
         .toString()
         .split('\n')
+        .map((line) => line.trim())
         .where((e) => e.isNotEmpty && e.startsWith(nonCustom))
         .map(extractToolchainName)
         .toList(growable: true);
@@ -95,6 +97,7 @@ class Rustup {
     final lines = res.stdout
         .toString()
         .split('\n')
+        .map((line) => line.trim())
         .where((e) => e.isNotEmpty)
         .toList(growable: true);
     return lines;

@@ -2,13 +2,15 @@ use crate::api::cancel::RsCancellationToken;
 use crate::api::stream;
 use crate::frb_generated::StreamSink;
 use flutter_rust_bridge::frb;
+pub use localsend::http::chat_dto::{
+    ChatAck, ChatCapabilities, ChatInvite, ChatInviteStatus, ChatMessageDto,
+};
 pub use localsend::http::client::{ClientError, LsHttpClientVersion};
 pub use localsend::http::dto::{
-    PrepareUploadRequestDto, PrepareUploadResponseDto, PrepareUploadResult,
-    RegisterDto, RegisterResponseDto,
+    PrepareUploadRequestDto, PrepareUploadResponseDto, PrepareUploadResult, RegisterDto,
+    RegisterResponseDto,
 };
 use localsend::model::discovery::ProtocolType;
-use localsend::reqwest;
 use localsend::util::error::ErrorChain;
 
 pub struct RsHttpClient {
@@ -42,6 +44,49 @@ pub fn create_client(
 }
 
 impl RsHttpClient {
+    pub async fn chat_capabilities(
+        &self,
+        ip: &str,
+        port: u16,
+    ) -> Result<ChatCapabilities, RsHttpClientError> {
+        self.inner
+            .chat_capabilities(ip, port)
+            .await
+            .map_err(RsHttpClientError::from)
+    }
+    pub async fn chat_invite(
+        &self,
+        ip: &str,
+        port: u16,
+        payload: ChatInvite,
+    ) -> Result<ChatInviteStatus, RsHttpClientError> {
+        self.inner
+            .chat_invite(ip, port, payload)
+            .await
+            .map_err(RsHttpClientError::from)
+    }
+    pub async fn chat_invite_status(
+        &self,
+        ip: &str,
+        port: u16,
+        invitation_id: &str,
+    ) -> Result<ChatInviteStatus, RsHttpClientError> {
+        self.inner
+            .chat_invite_status(ip, port, invitation_id)
+            .await
+            .map_err(RsHttpClientError::from)
+    }
+    pub async fn chat_deliver(
+        &self,
+        ip: &str,
+        port: u16,
+        payload: ChatMessageDto,
+    ) -> Result<ChatAck, RsHttpClientError> {
+        self.inner
+            .chat_deliver(ip, port, payload)
+            .await
+            .map_err(RsHttpClientError::from)
+    }
     pub async fn register(
         &self,
         protocol: ProtocolType,

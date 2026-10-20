@@ -26,12 +26,16 @@ class NearbyDevicesService extends ReduxNotifier<NearbyDevicesState> {
   final IsolateController _isolateController;
   final FavoritesService _favoriteService;
   final DiscoveryLogger _discoveryLogger;
+  final DateTime Function() _now;
+  final _confirmedAt = <String, DateTime>{};
 
   NearbyDevicesService({
     required IsolateController isolateController,
     required FavoritesService favoriteService,
     required DiscoveryLogger discoveryLogs,
+    DateTime Function()? now,
   }) : _discoveryLogger = discoveryLogs,
+       _now = now ?? DateTime.now,
        _isolateController = isolateController,
        _favoriteService = favoriteService;
 
@@ -64,9 +68,38 @@ class StartDiscoveryListener extends AsyncReduxAction<NearbyDevicesService, Near
 class ClearFoundDevicesAction extends ReduxAction<NearbyDevicesService, NearbyDevicesState> {
   @override
   NearbyDevicesState reduce() {
+    notifier._confirmedAt.clear();
     return state.copyWith(
       devices: {},
     );
+  }
+}
+
+/// Discovery is evidence of recent reachability, not an indefinite online bit.
+class ExpireNearbyDevicesAction extends ReduxAction<NearbyDevicesService, NearbyDevicesState> {
+  static const maxAge = Duration(seconds: 90);
+  @override
+  NearbyDevicesState reduce() {
+    final now = notifier._now();
+    final expired = state.devices.keys.where((key) {
+      final confirmed = notifier._confirmedAt[key];
+      return confirmed == null || now.difference(confirmed) >= maxAge || now.isBefore(confirmed);
+    }).toSet();
+    if (expired.isEmpty) return state;
+    notifier._confirmedAt.removeWhere((key, _) => expired.contains(key));
+    return state.copyWith(devices: {...state.devices}..removeWhere((key, _) => expired.contains(key)));
+  }
+}
+
+/// A late failure at an old address must not invalidate a newer confirmation.
+class MarkDeviceUnavailableAction extends ReduxAction<NearbyDevicesService, NearbyDevicesState> {
+  final Device device;
+  MarkDeviceUnavailableAction(this.device);
+  @override
+  NearbyDevicesState reduce() {
+    if (!identical(state.devices[device.fingerprint], device)) return state;
+    notifier._confirmedAt.remove(device.fingerprint);
+    return state.copyWith(devices: {...state.devices}..remove(device.fingerprint));
   }
 }
 
@@ -93,6 +126,7 @@ class RegisterDeviceAction extends AsyncReduxAction<NearbyDevicesService, Nearby
     } else {
       await Future.microtask(() {});
     }
+    notifier._confirmedAt[device.fingerprint] = notifier._now();
     return state.copyWith(
       devices: {...state.devices}..update(device.fingerprint, (_) => device, ifAbsent: () => device),
     );

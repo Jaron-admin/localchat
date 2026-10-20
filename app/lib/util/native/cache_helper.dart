@@ -5,6 +5,7 @@ import 'dart:isolate';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/services.dart';
+import 'package:localsend_app/config/app_identity.dart';
 import 'package:localsend_app/util/native/platform_check.dart';
 import 'package:localsend_isolates/util/file_path_helper.dart';
 import 'package:localsend_isolates/util/logger.dart';
@@ -48,7 +49,7 @@ Future<void> _clear(RootIsolateToken token) async {
     checkPlatform([TargetPlatform.iOS])
         ? PathProviderFoundation()
               .getContainerPath(
-                appGroupIdentifier: 'group.org.localsend.localsendApp',
+                appGroupIdentifier: AppIdentity.appleAppGroup,
               )
               .then((directoryPath) async {
                 if (directoryPath == null) {

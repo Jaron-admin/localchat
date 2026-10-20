@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
+import 'package:localsend_app/config/app_identity.dart';
 import 'package:localsend_app/gen/assets.gen.dart';
 import 'package:localsend_app/gen/strings.g.dart';
 import 'package:localsend_app/provider/animation_provider.dart';
@@ -31,7 +32,7 @@ Future<void> initTray() async {
       String icon;
       if (await File('/.flatpak-info').exists()) {
         // Icon for Flatpak, which must exist in /app/share/icons/hicolor/*x*/apps.
-        icon = 'org.localsend.localsend_app-tray';
+        icon = '${AppIdentity.applicationId}-tray';
       } else {
         icon = Assets.img.logo32White.path;
       }

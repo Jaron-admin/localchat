@@ -124,6 +124,7 @@ impl App {
                 cert_fingerprint,
                 files,
                 decision_tx,
+                ..
             } => {
                 // The sender is clearly reachable; make sure it has a slot.
                 self.device_confirmed(ip.to_string(), info.clone());
@@ -226,7 +227,7 @@ impl App {
                     );
                 }
             }
-            ServerEventV2::CancelReceived { ip, session_id } => {
+            ServerEventV2::CancelReceived { ip, session_id, .. } => {
                 if let Some(send) = &self.send
                     && send.session_id.as_deref() == Some(session_id.as_str())
                     && send.host == ip.to_string()
@@ -240,6 +241,9 @@ impl App {
                     Category::Receive,
                     &format!("Server stopped, no longer receiving: {error}"),
                 );
+            }
+            ServerEventV2::ChatRequest { response_tx, .. } => {
+                let _ = response_tx.send(localsend::http::chat_dto::ChatReply::Rejected(localsend::http::chat_dto::ChatErrorCode::Unavailable));
             }
         }
     }

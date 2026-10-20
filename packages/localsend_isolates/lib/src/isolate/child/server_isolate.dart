@@ -4,7 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:localsend_isolates/constants.dart';
 import 'package:localsend_isolates/model/dto/multicast_dto.dart';
 import 'package:localsend_isolates/model/file_type.dart';
-import 'package:localsend_isolates/rust/api/model.dart' show FileDto;
+import 'package:localsend_isolates/rust/api/model.dart' show FileDto, ChatOperation, ChatReply, ChatTransferRef;
 import 'package:localsend_isolates/rust/api/server.dart';
 import 'package:localsend_isolates/src/isolate/child/main.dart';
 import 'package:localsend_isolates/src/isolate/child/sync_provider.dart';
@@ -20,6 +20,12 @@ import 'package:typed_isolates/typed_isolates.dart';
 final _logger = Logger('HttpServerIsolate');
 
 sealed class BaseHttpServerTask {}
+
+class HttpServerChatResponseTask implements BaseHttpServerTask {
+  final String requestId;
+  final ChatReply reply;
+  HttpServerChatResponseTask({required this.requestId, required this.reply});
+}
 
 /// Starts the HTTP server.
 /// The device information is derived from the sync state.
@@ -97,11 +103,14 @@ class HttpServerReceiveConfig {
 /// on the server event stream and may cancel the session via
 /// [HttpServerCancelSessionTask].
 class HttpServerPrepareUploadDecisionTask implements BaseHttpServerTask {
+  final String sessionId;
+
   /// The receive configuration including the accepted file IDs.
   /// `null` declines the request.
   final HttpServerReceiveConfig? config;
 
   HttpServerPrepareUploadDecisionTask({
+    required this.sessionId,
     required this.config,
   });
 }
@@ -166,9 +175,21 @@ class HttpServerFailFileDownloadTask implements BaseHttpServerTask {
 /// A message sent from the server isolate to the main isolate.
 sealed class HttpServerEvent {}
 
+class HttpServerChatRequestEvent extends HttpServerEvent {
+  final String requestId;
+  final String ip;
+  final String peerFingerprint;
+  final ChatOperation operation;
+  HttpServerChatRequestEvent({required this.requestId, required this.ip, required this.peerFingerprint, required this.operation});
+}
+
 /// The server has been started and is listening.
 /// Always the first event emitted by a [HttpServerStartTask].
-class HttpServerStartedEvent extends HttpServerEvent {}
+class HttpServerStartedEvent extends HttpServerEvent {
+  final int port;
+
+  HttpServerStartedEvent({required this.port});
+}
 
 /// A device registered itself on this server.
 ///
@@ -188,6 +209,8 @@ class HttpServerRegisterEvent extends HttpServerEvent {
 /// A sender requests to upload files.
 /// Must be answered with a [HttpServerPrepareUploadDecisionTask].
 class HttpServerPrepareUploadEvent extends HttpServerEvent {
+  final ChatTransferRef? localchat;
+
   /// The session ID the upload session will have when the request is accepted.
   final String sessionId;
   final String ip;
@@ -202,6 +225,7 @@ class HttpServerPrepareUploadEvent extends HttpServerEvent {
   final Map<String, FileDto> files;
 
   HttpServerPrepareUploadEvent({
+    this.localchat,
     required this.sessionId,
     required this.ip,
     required this.info,
@@ -288,10 +312,12 @@ class HttpServerPrepareUploadAbortedEvent extends HttpServerEvent {
 /// during prepare-upload. The application must verify that [ip] matches the
 /// target of the send session before cancelling it.
 class HttpServerCancelReceivedEvent extends HttpServerEvent {
+  final String? certFingerprint;
   final String ip;
   final String sessionId;
 
   HttpServerCancelReceivedEvent({
+    this.certFingerprint,
     required this.ip,
     required this.sessionId,
   });
@@ -375,6 +401,7 @@ final _receiveSessionProvider = Provider((ref) => _ReceiveSessionHolder());
 
 class _ReceiveSessionHolder {
   _ReceiveSession? session;
+  String? pendingSessionId;
 }
 
 Future<void> setupHttpServerIsolate(
@@ -396,6 +423,14 @@ Future<void> setupHttpServerIsolate(
     },
     handler: (ref, task) async {
       switch (task.data) {
+        case HttpServerChatResponseTask response:
+          try {
+            await ref.read(httpServerProvider).respondChatRequest(requestId: response.requestId, reply: response.reply);
+            sendToMain(IsolateTaskStreamResult.done(id: task.id));
+          } catch (_) {
+            sendToMain(IsolateTaskStreamResult.error(id: task.id, error: 'Chat request is no longer pending'));
+          }
+          return;
         case HttpServerStartTask startTask:
           final syncState = ref.read(syncProvider);
           final Stream<RsServerEvent> events;
@@ -435,7 +470,7 @@ Future<void> setupHttpServerIsolate(
           sendToMain(
             IsolateTaskStreamResult.event(
               id: task.id,
-              data: HttpServerStartedEvent(),
+              data: HttpServerStartedEvent(port: await ref.read(httpServerProvider).port),
             ),
           );
 
@@ -452,14 +487,18 @@ Future<void> setupHttpServerIsolate(
             await for (final event in events) {
               final holder = ref.read(_receiveSessionProvider);
               switch (event) {
+                case RsServerEvent_ChatRequest(:final requestId, :final ip, :final peerFingerprint, :final operation):
+                  emit(HttpServerChatRequestEvent(requestId: requestId, ip: ip, peerFingerprint: peerFingerprint, operation: operation));
                 case RsServerEvent_Register(:final ip, :final info):
                   emit(HttpServerRegisterEvent(ip: ip, info: info));
-                case RsServerEvent_PrepareUpload(:final sessionId, :final ip, :final info, :final certFingerprint, :final files):
+                case RsServerEvent_PrepareUpload(:final sessionId, :final ip, :final info, :final certFingerprint, :final files, :final localchat):
                   // The Rust server is the authority on the single-session
                   // invariant: a new request means the old session is over.
                   holder.session = null;
+                  holder.pendingSessionId = sessionId;
                   emit(
                     HttpServerPrepareUploadEvent(
+                      localchat: localchat,
                       sessionId: sessionId,
                       ip: ip,
                       info: info,
@@ -512,14 +551,16 @@ Future<void> setupHttpServerIsolate(
                     ),
                   );
                 case RsServerEvent_PrepareUploadAborted(:final sessionId):
+                  if (holder.pendingSessionId == sessionId) holder.pendingSessionId = null;
                   emit(
                     HttpServerPrepareUploadAbortedEvent(
                       sessionId: sessionId,
                     ),
                   );
-                case RsServerEvent_CancelReceived(:final ip, :final sessionId):
+                case RsServerEvent_CancelReceived(:final ip, :final sessionId, :final certFingerprint):
                   emit(
                     HttpServerCancelReceivedEvent(
+                      certFingerprint: certFingerprint,
                       ip: ip,
                       sessionId: sessionId,
                     ),
@@ -567,10 +608,21 @@ Future<void> setupHttpServerIsolate(
           return;
         case HttpServerPrepareUploadDecisionTask decisionTask:
           final config = decisionTask.config;
+          final holder = ref.read(_receiveSessionProvider);
+          if (holder.pendingSessionId != decisionTask.sessionId || (config != null && config.sessionId != decisionTask.sessionId)) return;
+          holder.pendingSessionId = null;
           // An empty fileNameMap accepts nothing: the Rust server responds
           // with 204 and creates no session.
-          ref.read(_receiveSessionProvider).session = config == null || config.fileNameMap.isEmpty ? null : _ReceiveSession(config);
-          await ref.read(httpServerProvider).respondPrepareUpload(acceptedFileIds: config?.fileNameMap.keys.toList());
+          final receiving = config == null || config.fileNameMap.isEmpty ? null : _ReceiveSession(config);
+          holder.session = receiving;
+          try {
+            await ref
+                .read(httpServerProvider)
+                .respondPrepareUpload(sessionId: decisionTask.sessionId, acceptedFileIds: config?.fileNameMap.keys.toList());
+          } catch (e) {
+            if (identical(holder.session, receiving)) holder.session = null;
+            _logger.fine('Prepare-upload decision expired', e);
+          }
           return;
         case HttpServerCancelSessionTask cancelTask:
           final holder = ref.read(_receiveSessionProvider);

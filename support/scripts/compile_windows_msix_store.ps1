@@ -1,12 +1,1 @@
-# UNCOMMENT THESE LINES TO BUILD FROM LATEST COMMIT
-# git reset --hard origin/main
-# git pull
-
-fvm flutter clean
-fvm flutter pub get
-fvm dart run build_runner build -d
-fvm flutter pub run msix:create --store
-
-Move-Item -Path build/windows/x64/runner/Release/localsend_app.msix -Destination LocalSend-XXX-windows-x86-64-store.msix
-
-Write-Output 'Generated Windows msix!'
+throw 'LocalChat has no configured Microsoft Store product. Configure this fork before building a Store package; see support/docs/localchat-build.md.'

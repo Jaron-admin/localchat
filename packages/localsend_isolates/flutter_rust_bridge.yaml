@@ -2,3 +2,7 @@ rust_input: crate::api
 rust_root: rust/
 dart_output: lib/rust
 dart_format_line_length: 150
+
+# Run explicitly after FRB: fvm dart run build_runner build --force-jit.
+# This also avoids AOT output path failures on this Windows development host.
+build_runner: false

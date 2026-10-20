@@ -1,4 +1,5 @@
 use super::{ClientError, ResponseExt, ResultWithPublicKey};
+use crate::http::chat_dto::*;
 use crate::http::client::url::{ApiVersion, TargetUrl};
 use crate::http::dto_v2::{
     InfoResponseDtoV2, PrepareDownloadResponseDtoV2, PrepareUploadRequestDtoV2,
@@ -13,6 +14,7 @@ use tokio_util::sync::CancellationToken;
 /// HTTP client for LocalSend Protocol v2.2.
 pub struct LsHttpClientV2 {
     client: reqwest::Client,
+    chat_pinned: bool,
 }
 
 impl LsHttpClientV2 {
@@ -36,6 +38,7 @@ impl LsHttpClientV2 {
         timeout: Option<std::time::Duration>,
     ) -> Result<Self, ClientError> {
         Ok(Self {
+            chat_pinned: expected_fingerprint.is_some(),
             client: super::create_reqwest_client(private_key, cert, expected_fingerprint, timeout)?,
         })
     }
@@ -56,7 +59,99 @@ impl LsHttpClientV2 {
             .redirect(reqwest::redirect::Policy::none())
             .build()?;
 
-        Ok(Self { client })
+        Ok(Self {
+            client,
+            chat_pinned: false,
+        })
+    }
+
+    fn chat_url(&self, ip: &str, port: u16, path: &str) -> Result<reqwest::Url, ClientError> {
+        if !self.chat_pinned {
+            return Err(anyhow::anyhow!("Chat requires a pinned peer certificate").into());
+        }
+        let base = TargetUrl {
+            version: ApiVersion::V2,
+            protocol: "https",
+            host: ip.into(),
+            port,
+            path: "/",
+            params: &[],
+        }
+        .to_string();
+        let mut url = reqwest::Url::parse(&base).map_err(anyhow::Error::from)?;
+        url.set_path(&format!("/api/localchat/v1/{path}"));
+        Ok(url)
+    }
+
+    async fn chat_response<T: serde::de::DeserializeOwned>(
+        &self,
+        request: reqwest::RequestBuilder,
+        accepted: &[StatusCode],
+    ) -> Result<T, ClientError> {
+        let response = request
+            .timeout(std::time::Duration::from_secs(12))
+            .send()
+            .await?;
+        if !accepted.contains(&response.status()) {
+            return response.into_error().await;
+        }
+        Ok(response.json().await?)
+    }
+
+    pub async fn chat_capabilities(
+        &self,
+        ip: &str,
+        port: u16,
+    ) -> Result<ChatCapabilities, ClientError> {
+        self.chat_response(
+            self.client.get(self.chat_url(ip, port, "capabilities")?),
+            &[StatusCode::OK],
+        )
+        .await
+    }
+    pub async fn chat_invite(
+        &self,
+        ip: &str,
+        port: u16,
+        payload: ChatInvite,
+    ) -> Result<ChatInviteStatus, ClientError> {
+        self.chat_response(
+            self.client
+                .post(self.chat_url(ip, port, "invitations")?)
+                .json(&payload),
+            &[StatusCode::OK, StatusCode::ACCEPTED],
+        )
+        .await
+    }
+    pub async fn chat_invite_status(
+        &self,
+        ip: &str,
+        port: u16,
+        invitation_id: &str,
+    ) -> Result<ChatInviteStatus, ClientError> {
+        if !is_chat_id(invitation_id) {
+            return Err(anyhow::anyhow!("Invalid invitation ID").into());
+        }
+        self.chat_response(
+            self.client
+                .get(self.chat_url(ip, port, &format!("invitations/{invitation_id}"))?),
+            &[StatusCode::OK],
+        )
+        .await
+    }
+    pub async fn chat_deliver(
+        &self,
+        ip: &str,
+        port: u16,
+        payload: ChatMessageDto,
+    ) -> Result<ChatAck, ClientError> {
+        self.chat_response(
+            self.client
+                .post(self.chat_url(ip, port, "messages")?)
+                .json(&payload),
+            &[StatusCode::OK, StatusCode::CREATED],
+        )
+        .await
     }
 
     /// Registers with another device for discovery.

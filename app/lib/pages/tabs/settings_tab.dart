@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:localsend_app/config/app_identity.dart';
 import 'package:localsend_app/config/theme.dart';
 import 'package:localsend_app/gen/strings.g.dart';
 import 'package:localsend_app/model/persistence/color_mode.dart';
@@ -528,19 +529,20 @@ class SettingsTab extends StatelessWidget {
                     await context.push(() => const AboutPage());
                   },
                 ),
-                _ButtonEntry(
-                  label: t.settingsTab.other.support,
-                  buttonLabel: t.settingsTab.other.donate,
-                  onTap: () async {
-                    await context.push(() => const DonationPage());
-                  },
-                ),
+                if (AppIdentity.purchasesEnabled)
+                  _ButtonEntry(
+                    label: t.settingsTab.other.support,
+                    buttonLabel: t.settingsTab.other.donate,
+                    onTap: () async {
+                      await context.push(() => const DonationPage());
+                    },
+                  ),
                 _ButtonEntry(
                   label: t.settingsTab.other.privacyPolicy,
                   buttonLabel: t.general.open,
                   onTap: () async {
                     await launchUrl(
-                      Uri.parse('https://localsend.org/privacy'),
+                      Uri.parse('${AppIdentity.repositoryUrl}/blob/localchat/PRIVACY.md'),
                       mode: LaunchMode.externalApplication,
                     );
                   },

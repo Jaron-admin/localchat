@@ -10,7 +10,7 @@ import 'package:localsend_isolates/rust/frb_generated.dart';
 
 part 'server.freezed.dart';
 
-// These functions are ignored because they are not marked as `pub`: `handle_server_event`, `handle_web_event`, `recv_opt`, `resolve_file_content`, `resolve_upload_target`, `stop`
+// These functions are ignored because they are not marked as `pub`: `handle_server_event`, `handle_web_event`, `recv_opt`, `resolve_file_content`, `resolve_upload_target`, `stop`, `take_prepare_decision`
 // These types are ignored because they are neither used by any `pub` functions nor (for structs and enums) marked `#[frb(unignore)]`: `ServerInstance`
 
 /// Starts the HTTP server on the given port (IPv4 and IPv6).
@@ -86,6 +86,11 @@ abstract class RsHttpServer implements RustOpaqueInterface {
   /// hot restart), so this call does not keep the server alive forever.
   Stream<RsServerEvent> listen();
 
+  /// The actual listening port, including an OS-selected fallback port.
+  Future<int> port();
+
+  Future<void> respondChatRequest({required String requestId, required ChatReply reply});
+
   /// Answers the pending [RsServerEvent::WebFileDownload] event with the source
   /// the file content should be read from (either a path or a file descriptor).
   ///
@@ -115,7 +120,7 @@ abstract class RsHttpServer implements RustOpaqueInterface {
   ///
   /// Passing the accepted file IDs (a subset of the offered files) accepts the request.
   /// Passing `None` declines the request.
-  Future<void> respondPrepareUpload({List<String>? acceptedFileIds});
+  Future<void> respondPrepareUpload({required String sessionId, List<String>? acceptedFileIds});
 
   /// Stops the server.
   /// Returns after the listeners are closed, so the port can be bound again.
@@ -173,6 +178,13 @@ class RegisterDtoV2 {
 sealed class RsServerEvent with _$RsServerEvent {
   const RsServerEvent._();
 
+  const factory RsServerEvent.chatRequest({
+    required String requestId,
+    required String ip,
+    required String peerFingerprint,
+    required ChatOperation operation,
+  }) = RsServerEvent_ChatRequest;
+
   /// A device registered itself via `POST /api/localsend/v2/register`.
   ///
   /// On TLS, this event is only emitted when `info.fingerprint` matches the
@@ -196,6 +208,7 @@ sealed class RsServerEvent with _$RsServerEvent {
     /// `None` when the server runs without TLS.
     String? certFingerprint,
     required Map<String, FileDto> files,
+    ChatTransferRef? localchat,
   }) = RsServerEvent_PrepareUpload;
 
   /// An accepted file is being uploaded via `POST /api/localsend/v2/upload`.
@@ -226,6 +239,7 @@ sealed class RsServerEvent with _$RsServerEvent {
   const factory RsServerEvent.cancelReceived({
     required String ip,
     required String sessionId,
+    String? certFingerprint,
   }) = RsServerEvent_CancelReceived;
 
   /// A web client requests to download the shared files via `POST /api/localsend/v2/prepare-download`.

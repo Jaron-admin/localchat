@@ -3,7 +3,6 @@ import 'package:localsend_app/provider/local_ip_provider.dart';
 import 'package:localsend_app/provider/logging/discovery_logs_provider.dart';
 import 'package:logging/logging.dart';
 import 'package:refena_flutter/refena_flutter.dart';
-import 'package:refena_inspector_client/refena_inspector_client.dart';
 
 final _logger = Logger('Refena');
 
@@ -19,7 +18,6 @@ class CustomRefenaObserver extends RefenaMultiObserver {
             limit: 100,
             exclude: _exclude,
           ),
-          RefenaInspectorObserver(),
         ],
       );
 }
