@@ -12,7 +12,7 @@ Flutter 3.41.9 / Dart 3.11.5 / Rust 1.97.1 / FRB 2.12.0 / sqlite3 3.5.2。
 | Windows x64，本机 | 最终 debug 通过 | 真实应用与 native smoke 均通过 | 真实 UDP 核心测试通过；含端口/scoped IPv6 的手动地址解析测试通过，原生输入 UI 未验证 | 两真实进程通过 | 128 MiB 上传期间双向文字通过 | 历史去重、文件卡片保留及离线重连补发通过 | 发布版 LocalSend 互传、安装器共存未验证 |
 | Linux / Ubuntu 24.04 | CI 已配置；本机验收时未执行 | 未验证 | 未验证 | 未验证 | 未验证 | 未验证 | 未验证 |
 | macOS | CI 已配置；本机验收时未执行 | 未验证 | 未验证 | 未验证 | 未验证 | 未验证 | 未验证 |
-| Android | FOSS arm64 debug CI 已配置；本机验收时未执行 | 未验证 | 未验证 | 未验证 | 未验证 | 未验证 | 未验证 |
+| Android | 本机 arm64 debug 通过（Lenovo L78121，Android 9），见[构建记录](localchat-build.md) | 通过（真实设备启动即打开） | 手动地址经 adb 隧道通过；自动发现未验证 | 通过（与 Windows 双向落库） | 未验证 | 未验证 | 未验证 |
 | iOS | 无签名 debug CI 已配置；本机验收时未执行 | 未验证 | 未验证 | 未验证 | 未验证 | 未验证 | 未验证 |
 
 Windows 运行探针使用两个独立便携配置和临时测试身份，程序化预授权后测试真实应用
@@ -45,6 +45,19 @@ outbox、HTTP 控制器、文件保存和 SQLite。文件上传由持有测试�
 
 最后一个离线探针最初放在包外，无法解析 SQLite native assets，尚未进入队列检查即失败。
 移到 `app/tool/`、从 `app/` 执行后通过；没有为探针修改产品 SQLite 加载方式。
+
+## Android 实机记录（2026-10-20）
+
+设备 Lenovo L78121（Flyme 8.1.0.0A / Android 9 / arm64-v8a），安装 arm64 debug APK。
+
+- 已通过：构建、安装、启动、会话列表与附近设备页显示；手动地址（`adb reverse` 隧道
+  `127.0.0.1:15817`）发现 Windows 端；双向文字落库且状态 `delivered`；手机向 Windows 发送
+  `a1.png`、`c1.png` 两次均 `state=complete` 且字节数一致；Google 拼音输入法 4.5.2 安装后
+  可正常输入中文。
+- 未通过或未测：真实 Wi-Fi 下的自动发现、断网条件、前后台切换与睡眠恢复、大文件传输期间
+  继续聊天、进程重启后历史与待发消息、与正式版 LocalSend 互传、独立安装/卸载。
+- 已知问题：Windows 端在接收文件完成后画面全黑（进程存活、无异常日志、文件已落盘），
+  重启应用后恢复；详见[构建记录](localchat-build.md)的「已知问题」。
 
 ## 尚需实机验收
 

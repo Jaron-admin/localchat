@@ -71,13 +71,80 @@ Apple 签名团队和 App Group 授权、Windows 发布证书必须配置为维�
 | 修改后的 Flutter 全套测试 / 静态分析 | 74 项通过；静态分析无问题 |
 | Windows 安装共存与卸载 | 安装标识已隔离，未做安装器实测 |
 | Windows debug 构建与启动 | 通过；localchat.exe 在隔离便携目录实际启动，真实 HTTPS info 请求通过客户端证书及精确服务端证书校验 |
-| Android / iOS / macOS / Linux 构建 | 未验证 |
-| 五个平台实体设备互传 | 未验证 |
+| Android debug 构建、安装与启动 | 通过；arm64 debug APK 在 Lenovo L78121（Flyme 8.1 / Android 9 / API 28）上实际安装启动，见下节 |
+| iOS / macOS / Linux 构建 | 未验证 |
+| 五个平台实体设备互传 | 未验证；仅 Android ↔ Windows 在同一 USB 隧道下验证过一对一文字与文件 |
 | 共存端口与发现 | 4 项测试通过，含真实 UDP 53317 公告回退 HTTP 端口 |
 | 桌面单实例与安全唤起 | 3 项跨进程锁测试、5 项 TLS 唤起测试通过；完整 Windows 应用二次启动及异常退出后重启通过 |
 | 任务 2 应用回归 | 静态分析无问题；77 项测试通过 |
 
 后续仅在命令或实测成功后更新对应状态。CI 编译成功不代表锁屏接收或实体设备互传已验证。
+
+## Android 构建与验证（2026-10-20）
+
+本轮在 Windows 上完成首次 Android 构建与真机验证，工具链按 `.fvmrc` 固定为 Flutter 3.41.9。
+
+| 项目 | 值 |
+| --- | --- |
+| Flutter / Dart | 3.41.9 / 3.11.5，revision `00b0c91f06` |
+| Rust | 1.97.1，target `aarch64-linux-android`（cargokit 另建 i686、x86_64） |
+| Android SDK | platform 36、build-tools 36.0.0、platform-tools、cmake 3.22.1、cmdline-tools 19.0 |
+| NDK | 28.2.13676358，与 `flutter.ndkVersion` 和 CI 一致 |
+| JDK | 17 |
+| 设备 | Lenovo L78121，Flyme 8.1.0.0A，Android 9（API 28），arm64-v8a |
+
+构建命令，在 `app/` 下执行：
+
+```sh
+flutter config --android-sdk <SDK 路径>
+flutter config --enable-native-assets
+flutter build apk --debug --target-platform android-arm64
+```
+
+产物为 `app/build/app/outputs/flutter-apk/app-debug.apk`，177.3 MB，`applicationId`
+是 `io.github.jaronadmin.localchat.debug`，含 arm64-v8a / armeabi-v7a / x86_64，
+`librust_lib_localsend_app.so` 与 `libsqlite3.so` 均已打包，签名是 Android 调试证书。
+
+### 构建链上必须处理的六件事
+
+1. **必须使用固定版本 Flutter**：Flutter 3.47.5 的 Gradle 插件要求 Gradle 8.14 以上，
+   与仓库固定的 8.13 冲突并触发 `android.newDsl` 相关问题，构建在配置阶段失败；
+   `.fvmrc` 指定的 3.41.9 可通过。
+2. **必须开启 native assets**：3.41.9 下 `enable-native-assets` 默认关闭，sqlite3 的 build
+   hook 不会把 `libsqlite3.so` 放进 APK，应用启动即抛 `ChatStorageException(unavailable)`。
+   开启后需清理 `app/build` 重新打包；增量构建会出现映射已生成而 APK 未更新的情况。
+3. **Kotlin 增量编译跨盘失败**：pub 缓存与项目不在同一盘符时报
+   `this and base files have different roots`。在 Gradle 用户目录关闭 `kotlin.incremental`
+   后通过，未修改仓库文件。
+4. **NDK 需要完整包元数据**：cargokit 以 `ndk/<版本>/package.xml` 判断是否已安装，只有
+   `source.properties` 会触发重复下载；补齐 `package.xml` 后通过。
+5. **依赖下载源需要镜像**：本网络下 `services.gradle.org`、`plugins.gradle.org`、
+   `repo.maven.apache.org` 会断流。Gradle 发行版预置到 wrapper 缓存，插件与构建脚本仓库
+   通过 Gradle 用户目录的 init 脚本换源；仓库文件未改动。
+6. **设备侧安装限制**：Flyme 对普通安装请求返回 `INSTALL_FAILED_USER_RESTRICTED`；设备已
+   root，使用 `su -c "pm install -r -t <apk>"` 安装成功。
+
+### 已验证的安卓行为
+
+- 首次启动完成初始化并写入 `settings.json`，聊天页与「附近设备」页正常显示。
+- 通过「附近设备 → 通过 IP 连接」填 `127.0.0.1:15817`（`adb reverse` 隧道）后发现 Windows
+  端，对端指纹 `710BB3…`，状态显示「已在局域网发现」。
+- 双向文字：手机发出 `hello-from-android-adb-1`，Windows 库中为 `direction=incoming`、
+  `delivery_state=delivered`；反向消息同样落库。
+- 文件：手机发 `a1.png`（130374 字节）与 `c1.png`（143249 字节），Windows 端两次均为
+  `state=complete` 并保存到 `C:/Users/Mercury/Downloads`，长度一致；手机端显示「文件已发送」。
+- 输入法：安装 Google 拼音输入法 `4.5.2.193126728-arm64-v8a`
+  （`com.google.android.inputmethod.pinyin`），设为默认后拼音候选正常，用于真机手工输入。
+
+上述文字与文件验证走的是 USB + `adb reverse`，不是真实局域网。手机随后接入同一 Wi-Fi
+（`10.63.71.x`），真实局域网下的发现与互传尚未复测。
+
+### 已知问题
+
+**Windows 端接收文件完成后画面全黑**：窗口只剩标题栏，进程存活且响应，日志无异常、
+stderr 为空，文件已完整落盘。两次均发生在文件接收完成之后；单独最大化窗口不触发
+（已做对照）。结束进程重启后恢复。待办：在接收完成的进度页退场处补日志、记录窗口可见性，
+并验证强制重绘能否恢复。
 
 ## SQLite 依赖调整
 
