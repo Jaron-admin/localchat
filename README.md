@@ -2,7 +2,8 @@
 
 LocalChat 是从 [LocalSend](https://github.com/localsend/localsend) v1.18.2 派生的独立应用：
 保留局域网文件传输，在此基础上加入一对一会话、历史记录和文件卡片。
-本项目不属于 LocalSend 官方发行，沿用 [Apache-2.0](LICENSE) 许可及上游版权。
+本项目不属于 LocalSend 官方发行。LocalChat 衍生版及自有修改采用 [GPL-3.0-only](LICENSE)；
+上游 LocalSend 代码继续保留 [Apache-2.0](LICENSES/Apache-2.0.txt) 许可与版权，详见 [许可范围与分发说明](LICENSING.md)。
 
 - 无账号、无中心服务器；优先同一局域网，发现设备时显示 IP、端口和平台。
 - 使用证书身份及双向许可建立聊天关系，支持自己的设备和不同的人。

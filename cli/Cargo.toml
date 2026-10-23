@@ -2,6 +2,7 @@
 name = "localsend-cli"
 version = "1.18.2"
 edition = "2024"
+license = "GPL-3.0-only AND Apache-2.0"
 
 [[bin]]
 name = "localsend-cli"

@@ -157,9 +157,15 @@ class AboutPage extends StatelessWidget {
               ),
               TextButton(
                 onPressed: () async {
+                  await launchUrl(Uri.parse('https://www.gnu.org/licenses/gpl-3.0.html'));
+                },
+                child: const Text('LocalChat: GNU GPL v3.0 only'),
+              ),
+              TextButton(
+                onPressed: () async {
                   await launchUrl(Uri.parse('https://www.apache.org/licenses/LICENSE-2.0'));
                 },
-                child: const Text('Apache License 2.0'),
+                child: const Text('Upstream LocalSend: Apache License 2.0'),
               ),
               TextButton(
                 onPressed: () async {
